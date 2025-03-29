@@ -5,20 +5,20 @@ import Image from "next/image";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Trophy, ThumbsUp, Heart } from "lucide-react";
+import { ArrowLeft, ThumbsUp, Heart, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Post } from "@/interfaces/Post";
+import { Game } from "@/interfaces/Game";
+import axios from "@/lib/axios";
+import { useAuth } from "@/contexts/AuthContext";
 
-interface GameStats {
-  gameId: string;
-  brandName: string;
-  duration: string;
-  posts: Post[];
+interface DailyLikes {
+  day: number;
+  likes: number;
 }
 
-// Function to format text with @ and # highlighting
 const formatText = (id: string, text: string) => {
   // Split the text by spaces to process each word
   const words = text.split(" ");
@@ -75,13 +75,13 @@ const PostItem = ({ post }: { post: Post }) => {
     <Card className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors">
       <div className="flex items-start space-x-3">
         <Avatar className="h-10 w-10">
-          <AvatarImage src={post.character?.image} alt={post.character?.name} />
-          <AvatarFallback>{post.character?.name.charAt(0)}</AvatarFallback>
+          <AvatarImage src={post.creator.image} alt={post.creator.name} />
+          <AvatarFallback>{post.creator.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center">
-            <span className="font-semibold">{post.character?.name}</span>
-            <span className="text-gray-500 ml-2">@{post.character?.username}</span>
+            <span className="font-semibold">{post.creator.name}</span>
+            <span className="text-gray-500 ml-2">@{post.creator.username}</span>
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
           </div>
@@ -113,87 +113,65 @@ const PostItem = ({ post }: { post: Post }) => {
 };
 
 export default function GameSummary({ params }: { params: { gameId: string } }) {
-  const [loading, setLoading] = useState(true);
-  const [gameData, setGameData] = useState<GameStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [totalLikes, setTotalLikes] = useState(0);
-  //   const [posts, setPosts] = useState<Post[]>([]);
-  //   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
+  const [gameData, setGameData] = useState<Game | null>(null);
+  const [dailyLikes, setDailyLikes] = useState<DailyLikes[]>([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchGameData = async () => {
-      setLoading(true);
+    const fetchData = async () => {
+      setIsLoading(true);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Fetch game data
+        const gameResponse = await axios(`/game?id=${params.gameId}`);
+        const gameData = gameResponse.data[0];
+        setGameData(gameData);
 
-        const mockData: GameStats = {
-          gameId: params.gameId,
-          brandName: "EcoFriendly",
-          duration: "7 days",
-          posts: [
-            {
-              id: "post1",
-              gameId: params.gameId,
-              text: "Introducing our new sustainable product line! #EcoFriendly",
-              image: "/placeholder.svg?height=300&width=300",
-              numLikes: 245,
-              day: 1
-            },
-            {
-              id: "post2",
-              gameId: params.gameId,
-              text: "Introducing our new sustainable product line! #EcoFriendly",
-              image: "/placeholder.svg?height=300&width=300",
-              numLikes: 245,
-              day: 1
-            },
-            {
-              id: "post3",
-              gameId: params.gameId,
-              text: "Introducing our new sustainable product line! #EcoFriendly",
-              image: "/placeholder.svg?height=300&width=300",
-              numLikes: 245,
-              day: 1
-            }
-          ]
-        };
-        setTotalLikes(mockData.posts.reduce((acc, post) => acc + post.numLikes, 0));
+        // Fetch posts only if gameData is available
+        if (gameData) {
+          const postResponse = await axios(`/post?gameId=${gameData.id}`);
+          const posts = postResponse.data;
 
-        setGameData(mockData);
+          const userPosts = posts.filter((post: Post) => post.creator.username === gameData.company?.username);
+
+          // Calculate daily likes
+          const dailyLikes: DailyLikes[] = Array.from({ length: 7 }, (_, i) => ({
+            day: i,
+            likes: userPosts
+              .filter((post: Post) => post.day === i)
+              .reduce((acc: number, post: Post) => acc + post.numLikes, 0)
+          }));
+
+          setTotalLikes(userPosts.reduce((acc: number, post: Post) => acc + post.numLikes, 0));
+          setPosts(userPosts);
+          setDailyLikes(dailyLikes); // Add state for dailyLikes
+        }
       } catch (error) {
-        console.error("Error fetching game data:", error);
+        console.error("Error fetching data:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    fetchGameData();
-  }, [params.gameId]);
+    if (user && params.gameId) {
+      fetchData();
+    }
+  }, [params.gameId, user]);
 
-  //   useEffect(() => {
-  //     const fetchPosts = async () => {
-  //       try {
-  //         const response = await fetch(`/api/posts?gameId=${params.gameId}`);
-  //         const data = await response.json();
-  //         setPosts(data);
-  //       } catch (error) {
-  //         console.error("Error fetching posts:", error);
-  //       }
-  //     };
+  useEffect(() => {
+    if (posts.length > 0) {
+      setFilteredPosts(posts.sort((a, b) => b.numLikes - a.numLikes).slice(0, 3));
+    }
+  }, [posts]);
 
-  //     fetchPosts();
-  //   }, [params.gameId]);
-
-  //   useEffect(() => {
-  //     if (posts.length > 0) {
-  //       setFilteredPosts(posts.sort((a, b) => b.numLikes - a.numLikes).slice(0, 3));
-  //     }
-  //   }, [posts]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="flex items-center mb-6">
-          <Link href="/my-games" className="flex items-center text-gray-600 hover:text-gray-900">
+          <Link href="/my-game" className="flex items-center text-gray-600 hover:text-gray-900">
             <ArrowLeft className="h-5 w-5 mr-2" />
             <span>My Games</span>
           </Link>
@@ -212,7 +190,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
     return (
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         <div className="flex items-center mb-6">
-          <Link href="/my-games" className="flex items-center text-gray-600 hover:text-gray-900">
+          <Link href="/my-game" className="flex items-center text-gray-600 hover:text-gray-900">
             <ArrowLeft className="h-5 w-5 mr-2" />
             <span>My Games</span>
           </Link>
@@ -221,7 +199,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
           <h2 className="text-2xl font-semibold mb-4">Game Not Found</h2>
           <p className="mb-8">We couldn&apos;t find the game data you&apos;re looking for.</p>
           <Button asChild>
-            <Link href="/my-games">Return to My Games</Link>
+            <Link href="/my-game">Return to My Games</Link>
           </Button>
         </div>
       </div>
@@ -231,7 +209,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
   return (
     <div className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="flex items-center mb-6">
-        <Link href="/my-games" className="flex items-center text-gray-600 hover:text-gray-900">
+        <Link href="/my-game" className="flex items-center text-gray-600 hover:text-gray-900">
           <ArrowLeft className="h-5 w-5 mr-2" />
           <span>My Games</span>
         </Link>
@@ -240,38 +218,40 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">Game Summary</h1>
-        </div>
-        <div className="mt-4 md:mt-0">
-          <Button className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
-            Share Results
-          </Button>
+          <p className="text-gray-600">
+            {gameData.company.name} - {gameData.company.description}
+          </p>
+          <p className="text-gray-600">
+            {gameData.scenario.name} - {gameData.scenario.description}
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 mb-8">
-        {/* <MetricCard
-          icon={<Users className="h-6 w-6" />}
-          title="Followers"
-          start={gameData.metrics.followers.start}
-          end={gameData.metrics.followers.end}
-          growth={followerGrowth}
-        /> */}
-        <StatsBox icon={<ThumbsUp className="h-6 w-6" />} title="Total Likes" total={totalLikes} />
+        <StatsBox
+          icon={<ThumbsUp className="h-6 w-6" />}
+          title="Total Likes"
+          label="likes"
+          total={totalLikes}
+          dailyData={dailyLikes}
+        />
+        <StatsBox
+          icon={<User className="h-6 w-6" />}
+          title="Total Followers"
+          label="followers"
+          total={gameData.followerCount}
+        />
       </div>
       <h2 className="text-2xl font-semibold mb-4">Top Performing Posts</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {gameData.posts.map((post) => (
+        {filteredPosts.map((post) => (
           <PostItem key={post.id} post={post} />
         ))}
       </div>
 
       <div className="flex justify-center mt-8">
         <Button asChild variant="outline" className="mr-4">
-          <Link href="/my-games">Back to My Games</Link>
-        </Button>
-        <Button asChild>
-          <Link href="/game/new">Start New Game</Link>
+          <Link href="/my-game">Back to My Games</Link>
         </Button>
       </div>
     </div>
@@ -281,18 +261,55 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
 interface StatsBoxProps {
   icon: React.ReactNode;
   title: string;
+  label: string;
   total: number;
+  dailyData?: DailyLikes[];
 }
 
-export function StatsBox({ icon, title, total }: StatsBoxProps) {
+export function StatsBox({ icon, title, label, total, dailyData }: StatsBoxProps) {
+  if (!dailyData) {
+    return (
+      <Card className="w-full">
+        <CardContent className="flex items-center justify-between p-6">
+          <div className="flex items-center gap-3">
+            {icon}
+            <h3 className="text-lg font-medium">{title}</h3>
+          </div>
+          <div className="text-2xl font-bold">
+            {total.toLocaleString()} {label}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const maxLikes = Math.max(...dailyData.map((d) => d.likes));
+
   return (
     <Card className="w-full">
-      <CardContent className="flex items-center justify-between p-6">
-        <div className="flex items-center gap-3">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3 mb-4">
           {icon}
           <h3 className="text-lg font-medium">{title}</h3>
+          <div className="ml-auto text-2xl font-bold">
+            {total.toLocaleString()} {label}
+          </div>
         </div>
-        <div className="text-2xl font-bold">{total.toLocaleString()} Likes</div>
+        <div className="h-40 flex items-end gap-2">
+          {dailyData.map((data) => (
+            <div key={data.day} className="flex-1 flex flex-col items-center">
+              <div
+                className="w-full bg-blue-500 rounded-t"
+                style={{
+                  height: `${(data.likes / maxLikes) * 100}%`,
+                  minHeight: data.likes > 0 ? "8px" : "0"
+                }}
+              />
+              <div className="text-xs mt-2">{formatDay(data.day).split("-")[0]}</div>
+              <div className="text-xs text-gray-500">{data.likes}</div>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

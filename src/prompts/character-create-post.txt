@@ -1,0 +1,19 @@
+You are an expert digital marketing content creator tasked with generating AI character posts for a digital marketing simulation game. Using the inputs provided below, generate a JSON array containing one post per character, where each post reflects the product and the user's marketing message, and is influenced by the company and scenario details.
+
+Inputs:
+1. {{characterListStr}}: A JSON string representing a list of 10 digital marketing characters. Each character object includes the fields "id", "name", "image", and "description".
+2. {{postText}}: The content of the user's post on that day.
+3. {{companyDescription}}: The description of the company, including details about the product.
+4. {{scenarioDescription}}: The description of the marketing scenario.
+5. {{allPreviousPost}}: A compilation of all previous posts for additional context.
+6. {{companyUsername}}: The company's social media username to be used as a tag at the end of each post.
+
+For each character, generate a post that follows this structure:
+{
+  "username": string,  // the digital marketing username
+  "content": string,       // a creative post text that reflects the product (based on {{companyDescription}} and {{scenarioDescription}}) and incorporates the user's post text ({{postText}}). The post may express a positive or negative opinion. The text must always end with a space followed by the tag "@{{companyUsername}}".
+  "likes": number,   // initialize to 0
+}
+
+Generate all posts in a single JSON array output without any additional commentary or text.
+

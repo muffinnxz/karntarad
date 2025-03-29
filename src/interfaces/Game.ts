@@ -1,25 +1,24 @@
+import { Company } from "./Company";
+import { Scenario } from "./Scenario";
+import { Character } from "./Character";
 
-import { Company } from './Company';
-import { Scenario } from './Scenario';
-import { Character } from './Character';
-import { DayType } from './Post';
 export interface Game {
-	id: string;
-	company: Company;
-	scenario: Scenario;
-	characterList: Character[];
-	userId: string;
-	day: DayType;
-	result: string;
+  id: string;
+  userId: string;
+  company: Company;
+  scenario: Scenario;
+  characterList: Character[];
+  day: number;
+  status: "in_progress" | "completed";
+  followerCount: number;
+  createdAt: Date;
 }
 
 export interface GamePostRequest {
-	companyId: string;
-	scenarioId: string;
+  companyId: string;
+  scenarioId: string;
 }
 
 export interface GamePostResponse {
-	game: Game;
+  game: Game;
 }
-
-

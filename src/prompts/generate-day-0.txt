@@ -13,7 +13,7 @@ Your response MUST follow this exact structure with proper XML tags to allow for
   {
     "name": "Character's full name",
     "username": "social_media_handle",
-    "description": "Detailed personality description including profession, interests, and attitude"
+    "description": "Brief description of personality, profession, and interests (2-3 sentences)"
   },
   {...},
   ...
@@ -24,8 +24,8 @@ Your response MUST follow this exact structure with proper XML tags to allow for
 [
   {
     "username": "character_username",
-    "content": "Post content including @{{company.username}} mention",
-    "likes: "Number of estimated like that this post will get with in these scenario and community."
+    "content": "Post content with proper mention format: ' @{{company.username}} ' (space before and after)",
+    "likes": number
   },
   {...},
   ...
@@ -33,16 +33,16 @@ Your response MUST follow this exact structure with proper XML tags to allow for
 </posts>
 
 # Character Generation
-Generate a diverse cast of 10 fictional characters who will participate in this social media simulation. Each character should have a unique personality, background, and relationship to the company's product or service.
+Generate a diverse cast of 10 fictional characters who will participate in this social media simulation. Each character should have a unique personality and background that relates to the scenario theme.
 
 IMPORTANT: Characters MUST be deeply integrated with the scenario theme. For example, if the scenario is "A midnight city with criminals hiding," characters should include nocturnal personalities, reformed criminals, vigilantes, night shift workers, underground artists, etc.
 
 IMPORTANT RULES FOR CHARACTERS:
 1. Character names MUST NOT contain any special characters (including quotes, apostrophes, or symbols) to avoid JSON parsing errors
-2. Create a balanced distribution of attitudes toward the company:
-   - 3 characters who are enthusiastic supporters/fans of the company
-   - 3 characters who are strongly skeptical or critical of the company
-   - 4 characters who are neutral or undecided about the company
+2. Create a balanced distribution of characters (though DO NOT explicitly state their attitudes in descriptions):
+   - 3 characters who will appear supportive of the company
+   - 3 characters who will appear skeptical or critical
+   - 4 characters who will appear neutral or undecided
 
 3. Include diverse fictional backgrounds that specifically relate to the scenario theme:
    - Characters with unusual or extraordinary professions relevant to the scenario
@@ -59,23 +59,31 @@ IMPORTANT RULES FOR CHARACTERS:
 For each character, provide:
 - Name (fictional but plausible, NO special characters)
 - Username (creative and fitting their personality)
-- Description (unique background, personality traits, interests, and specific attitude toward the company that ties into the scenario theme)
+- Description (concise 2-3 sentence personality summary that does NOT explicitly state their attitude toward the company)
 
 # Initial Social Media Posts
 Generate 10-15 social media posts from these characters that reflect the initial state of the company and scenario. These posts should show organic reactions to the company's presence, products, or announcements.
 
 The posts should:
 - Be distinctive and reflect the fictional world of the scenario
-- Include elements that specifically tie to the scenario theme (e.g., mentions of the midnight city atmosphere, nightlife references, etc.)
+- Include elements that specifically tie to the scenario theme
 - Include relevant hashtags where appropriate
 - Reference specific aspects of the company or its products
-- Include @ mentions of the company using its username
+- Properly format mentions with spaces: " @username " (space before and after the @ mention)
+- Allow characters to interact with and mention each other
 - Reflect the character's unique personality and perspective
 - Vary in length and style as real social media posts do
-- Maintain consistency with each character's established attitude (positive, negative, or neutral)
+- Implicitly show the character's attitude (positive, negative, or neutral) through content rather than stating it directly
+
+Example of correct mention format:
+"Love what you're doing over at @company_name! Can't wait to see more."
+"Hey @other_username, have you checked out what @company_name is offering?"
+
+Example of incorrect mention format:
+"Love what you're doing @company_name's products!" (no apostrophe after username)
+"Check out@company_name today!" (missing space before @)
+"@company_name: this is interesting" (no colon after username)
 
 Make the simulation feel like a living ecosystem of voices with different opinions, interests, and communication styles. Create narrative tension and interesting dynamics between the characters that will allow for story development over the 7-day simulation.
-
-Make sure each character's reaction is appropriate to their personality and realistic for someone with their background. Consider how different fictional characters might respond to this company based on their needs, values, and experiences within the scenario's world.
 
 IMPORTANT: Ensure your response uses valid JSON syntax within the XML tags and follows the exact structure specified above. Double-check that character names do not contain any quotes or special characters that could break the JSON format.

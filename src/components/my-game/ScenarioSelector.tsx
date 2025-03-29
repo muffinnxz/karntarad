@@ -47,8 +47,11 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
   // State for form errors
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // State for loading
+  // State for loading scenario creation
   const [isLoading, setIsLoading] = useState(false);
+
+  // New state for loading scenarios when fetching from the API
+  const [isLoadingScenarios, setIsLoadingScenarios] = useState(false);
 
   // State for scenarios fetched from the API
   const [userScenarios, setUserScenarios] = useState<Scenario[]>([]);
@@ -57,6 +60,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
   // Fetch scenarios when the dialog opens
   useEffect(() => {
     if (open) {
+      setIsLoadingScenarios(true);
       axios
         .get("/scenario")
         .then((res) => {
@@ -66,6 +70,9 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
         })
         .catch((error) => {
           console.error("Error fetching scenarios:", error);
+        })
+        .finally(() => {
+          setIsLoadingScenarios(false);
         });
     }
   }, [open]);
@@ -241,61 +248,63 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
 
           {/* My Scenarios Tab */}
           <TabsContent value="my-scenarios" className="flex-1 overflow-hidden flex flex-col min-h-0">
-            <div className="overflow-y-auto pr-2 space-y-4 flex-1">
-              {userScenarios.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full py-8 text-center">
-                  <FileText className="h-12 w-12 text-muted-foreground mb-2" />
-                  <h3 className="font-medium text-lg">No scenarios yet</h3>
-                  <p className="text-muted-foreground text-sm mt-1 mb-4">
-                    Create your first scenario to get started, or explore community scenarios.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setActiveTab("new")}>
-                      Create Scenario
-                    </Button>
-                    <Button variant="outline" onClick={() => setActiveTab("community")}>
-                      Explore Community
-                    </Button>
-                  </div>
+            {isLoadingScenarios ? (
+              <div className="flex flex-col items-center justify-center h-full py-8 text-center">
+                <p className="text-lg">Loading your scenarios...</p>
+              </div>
+            ) : userScenarios.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full py-8 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground mb-2" />
+                <h3 className="font-medium text-lg">No scenarios yet</h3>
+                <p className="text-muted-foreground text-sm mt-1 mb-4">
+                  Create your first scenario to get started, or explore community scenarios.
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setActiveTab("new")}>
+                    Create Scenario
+                  </Button>
+                  <Button variant="outline" onClick={() => setActiveTab("community")}>
+                    Explore Community
+                  </Button>
                 </div>
-              ) : (
-                userScenarios.map((scenario) => (
-                  <Card
-                    key={scenario.id}
-                    className={`relative transition-all hover:border-primary hover:shadow-sm ${
-                      selectedScenario?.id === scenario.id ? "border-primary ring-1 ring-primary" : ""
-                    }`}
-                  >
-                    <CardContent className="p-4 cursor-pointer" onClick={() => handleSelectScenario(scenario)}>
-                      <div className="flex items-start gap-4">
-                        <div className="h-12 w-12 flex-shrink-0 rounded-md bg-muted flex items-center justify-center">
-                          <FileText className="h-6 w-6 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-medium text-lg">{scenario.name}</h3>
-                            <Badge variant="outline">{scenario.isPublic ? "Public" : "Private"}</Badge>
-                          </div>
-                          <p className="text-sm mt-2 line-clamp-2">{scenario.description}</p>
-                        </div>
+              </div>
+            ) : (
+              userScenarios.map((scenario) => (
+                <Card
+                  key={scenario.id}
+                  className={`relative transition-all hover:border-primary hover:shadow-sm ${
+                    selectedScenario?.id === scenario.id ? "border-primary ring-1 ring-primary" : ""
+                  }`}
+                >
+                  <CardContent className="p-4 cursor-pointer" onClick={() => handleSelectScenario(scenario)}>
+                    <div className="flex items-start gap-4">
+                      <div className="h-12 w-12 flex-shrink-0 rounded-md bg-muted flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-muted-foreground" />
                       </div>
-                    </CardContent>
-                    <button
-                      className="absolute bottom-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (window.confirm(`Are you sure you want to delete "${scenario.name}"?`)) {
-                          handleDeleteScenario(scenario.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Delete scenario</span>
-                    </button>
-                  </Card>
-                ))
-              )}
-            </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-lg">{scenario.name}</h3>
+                          <Badge variant="outline">{scenario.isPublic ? "Public" : "Private"}</Badge>
+                        </div>
+                        <p className="text-sm mt-2 line-clamp-2">{scenario.description}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <button
+                    className="absolute bottom-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm(`Are you sure you want to delete "${scenario.name}"?`)) {
+                        handleDeleteScenario(scenario.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete scenario</span>
+                  </button>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           {/* Community Tab */}

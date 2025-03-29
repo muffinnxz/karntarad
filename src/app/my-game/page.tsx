@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "@/lib/axios";
 // Next.js components
 import Link from "next/link";
 import Image from "next/image";
@@ -19,109 +20,9 @@ import { Company } from "@/interfaces/Company";
 import { Scenario } from "@/interfaces/Scenario";
 import { Game } from "@/interfaces/Game";
 
-// Sample data using the Game interface
-const savedGames: Game[] = [
-  {
-    id: "1",
-    company: {
-      id: "c1",
-      userId: "user_1",
-      name: "Acme Marketing",
-      description: "Digital marketing agency specializing in growth strategies",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    scenario: {
-      id: "s1",
-      userId: "user_1",
-      name: "Product Launch",
-      description: "Launch a new product in a competitive market",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    userId: "user_1",
-    day: 0,
-    result: "Game in progress",
-    characterList: []
-  },
-  {
-    id: "2",
-    company: {
-      id: "c2",
-      userId: "user_1",
-      name: "TechVision",
-      description: "Software development company focused on AI solutions",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    scenario: {
-      id: "s2",
-      userId: "user_1",
-      name: "Market Research",
-      description: "Conduct market research for a new product line",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    userId: "user_1",
-    day: 2,
-    result: "Completed market analysis",
-    characterList: []
-  },
-  {
-    id: "3",
-    company: {
-      id: "c3",
-      userId: "user_1",
-      name: "Global Solutions",
-      description: "International consulting firm for business transformation",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    scenario: {
-      id: "s3",
-      userId: "user_1",
-      name: "Client Negotiation",
-      description: "Negotiate a major contract with a potential client",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    userId: "user_1",
-    day: 1,
-    result: "Initial client meeting completed",
-    characterList: []
-  },
-  {
-    id: "4",
-    company: {
-      id: "c4",
-      userId: "user_1",
-      name: "Innovate Health",
-      description: "Healthcare technology provider improving patient outcomes",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    scenario: {
-      id: "s4",
-      userId: "user_1",
-      name: "Expansion Planning",
-      description: "Plan expansion into new markets",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    userId: "user_1",
-    day: 3,
-    result: "Expansion strategy drafted",
-    characterList: []
-  }
-];
-
 export default function LoadGameScreen() {
   const router = useRouter();
-  
+
   // UI state
   const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
   const [showNewGameModal, setShowNewGameModal] = useState(false);
@@ -130,13 +31,36 @@ export default function LoadGameScreen() {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
 
+  // State for saved games
+  const [savedGames, setSavedGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch games from the API
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+
+    axios
+      .get("/game")
+      .then((response) => {
+        setSavedGames(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching games:", err);
+        setError("Failed to load games. Please try again later.");
+        setLoading(false);
+      });
+  }, []);
+
   /**
    * Handle loading a game - navigate to the game play page
    * @param id - The ID of the game to load
    */
   const handleLoadGame = (id: string) => {
     console.log(`Loading game: ${id}`);
-    router.push(`/my-game/play/${id}`);
+    router.push(`/game/${id}`);
   };
 
   /**
@@ -154,9 +78,19 @@ export default function LoadGameScreen() {
    * @param id - The ID of the game to delete
    */
   const confirmDelete = (id: string) => {
-    console.log(`Deleting game: ${id}`);
-    // Implement your deletion logic here.
-    setDeleteConfirmation(null);
+    axios
+      .delete("/game", {
+        data: { gameId: id }
+      })
+      .then(() => {
+        console.log(`Game ${id} deleted successfully`);
+        // Remove the deleted game from the state
+        setSavedGames((prevGames) => prevGames.filter((game) => game.id !== id));
+        setDeleteConfirmation(null);
+      })
+      .catch((error) => {
+        console.error("Error deleting game:", error);
+      });
   };
 
   /**
@@ -168,28 +102,26 @@ export default function LoadGameScreen() {
       console.error("Company and scenario are required");
       return;
     }
-    
-    // Create a new game object following the Game interface
-    const newGame: Game = {
-      id: `game_${Date.now()}`,
-      company: selectedCompany,
-      scenario: selectedScenario,
-      userId: "current_user_id", // In a real app, get this from auth context
-      day: 0,
-      result: "Game started",
-      characterList: []
-    };
-    
-    console.log("Creating new game:", newGame);
-    
-    // In a real app, you would save this to your database
-    // For now, we'll navigate to the new game page
-    setShowNewGameModal(false);
-    router.push(`/my-game/play/${newGame.id}`);
-    
-    // Reset selections
-    setSelectedCompany(null);
-    setSelectedScenario(null);
+
+    // Make API call to create a new game
+    axios
+      .post("/game", {
+        companyId: selectedCompany.id,
+        scenarioId: selectedScenario.id
+      })
+      .then((response) => {
+        console.log("Game created successfully:", response.data);
+        // Navigate to the new game page
+        setShowNewGameModal(false);
+        router.push(`/game/${response.data.id}`);
+
+        // Reset selections
+        setSelectedCompany(null);
+        setSelectedScenario(null);
+      })
+      .catch((error) => {
+        console.error("Error creating game:", error);
+      });
   };
 
   return (
@@ -211,29 +143,52 @@ export default function LoadGameScreen() {
         {/* Main Content */}
         <main>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {/* New Game Card */}
-              <Card
-                className="flex cursor-pointer flex-col justify-between border border-dashed border-muted-foreground/20 bg-background transition-all hover:border-muted-foreground/40 hover:shadow-sm"
-                onClick={() => setShowNewGameModal(true)}
-              >
-                <CardContent className="flex flex-1 flex-col items-center justify-center p-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                    <Calendar className="h-6 w-6 text-muted-foreground" />
-                  </div>
-                  <h3 className="mt-4 text-lg font-medium">New Game</h3>
-                  <p className="mt-1 text-center text-sm text-muted-foreground">Start a new scenario</p>
-                </CardContent>
-                <CardFooter className="p-4">
-                  <Button className="w-full" variant="outline">
-                    Create
-                  </Button>
-                </CardFooter>
-              </Card>
+            {/* New Game Card */}
+            <Card
+              className="flex cursor-pointer flex-col justify-between border border-dashed border-muted-foreground/20 bg-background transition-all hover:border-muted-foreground/40 hover:shadow-sm"
+              onClick={() => setShowNewGameModal(true)}
+            >
+              <CardContent className="flex flex-1 flex-col items-center justify-center p-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <Calendar className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="mt-4 text-lg font-medium">New Game</h3>
+                <p className="mt-1 text-center text-sm text-muted-foreground">Start a new scenario</p>
+              </CardContent>
+              <CardFooter className="p-4">
+                <Button className="w-full" variant="outline">
+                  Create
+                </Button>
+              </CardFooter>
+            </Card>
 
-              {/* Saved Game Cards */}
-              {savedGames.map((game) => (
-                <Card 
-                  key={game.id} 
+            {/* Loading State */}
+            {loading && (
+              <div className="col-span-full flex justify-center py-12">
+                <p className="text-muted-foreground">Loading your games...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="col-span-full flex justify-center py-12">
+                <p className="text-destructive">{error}</p>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!loading && !error && savedGames.length === 0 && (
+              <div className="col-span-full flex flex-col items-center justify-center py-12">
+                <p className="text-muted-foreground mb-4">You don&apos;t have any saved games yet.</p>
+                <Button onClick={() => setShowNewGameModal(true)}>Create Your First Game</Button>
+              </div>
+            )}
+
+            {/* Saved Game Cards */}
+            {!loading &&
+              savedGames.map((game) => (
+                <Card
+                  key={game.id}
                   className="cursor-pointer transition-all hover:shadow-sm bg-background"
                   onClick={() => handleLoadGame(game.id)}
                 >
@@ -282,7 +237,7 @@ export default function LoadGameScreen() {
                   </CardFooter>
                 </Card>
               ))}
-            </div>
+          </div>
         </main>
       </div>
 

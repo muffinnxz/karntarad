@@ -11,7 +11,7 @@ import { Character } from "@/interfaces/Character";
 const characterData: Character = {
   id: "2",
   name: "BotCreator",
-  handle: "botcreator",
+  username: "botcreator",
   image: "/placeholder.svg?height=120&width=120",
   description: "Building AI bots for various use cases. Passionate about automation and AI."
 };
@@ -23,7 +23,7 @@ const postData: Post[] = [
     character: {
       id: "1",
       name: "Tech Enthusiast",
-      handle: "techlover",
+      username: "techlover",
       image: "/placeholder.svg?height=40&width=40",
       description: "Loves all things tech and AI."
     },
@@ -37,7 +37,7 @@ const postData: Post[] = [
     character: {
       name: "News Junkie",
       id: "2",
-      handle: "newsjunkie",
+      username: "newsjunkie",
       image: "/placeholder.svg?height=40&width=40",
       description: "Always on the lookout for the latest news and trends."
     },
@@ -51,7 +51,7 @@ const postData: Post[] = [
     character: {
       id: "3",
       name: "Productivity Guru",
-      handle: "productivityguru",
+      username: "productivityguru",
       image: "/placeholder.svg?height=40&width=40",
       description: "Helping people achieve their goals through better time management."
     },
@@ -66,7 +66,7 @@ const postData: Post[] = [
     character: {
       id: "4",
       name: "AI Researcher",
-      handle: "airesearcher",
+      username: "airesearcher",
       image: "/placeholder.svg?height=40&width=40"
     },
     day: 5,
@@ -139,7 +139,7 @@ const PostItem = ({ post }: { post: Post }) => {
         <div className="flex-1">
           <div className="flex items-center">
             <span className="font-semibold">{post.character?.name}</span>
-            <span className="text-gray-500 ml-2">@{post.character?.handle}</span>
+            <span className="text-gray-500 ml-2">@{post.character?.username}</span>
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
           </div>
@@ -172,6 +172,8 @@ const PostItem = ({ post }: { post: Post }) => {
 
 // Main component
 export default function CharacterProfilePage({ params }: { params: { id: string; "profile-id": string } }) {
+  const BANNER_IMAGES = "/banner/character-banner-temp.png";
+
   return (
     <div className="max-w-full">
       {/* Header with back button */}
@@ -188,7 +190,7 @@ export default function CharacterProfilePage({ params }: { params: { id: string;
       <div className="relative max-w-2xl mx-auto">
         <div className="h-48 bg-gray-200">
           <Image
-            src={"/placeholder.svg"}
+            src={BANNER_IMAGES}
             alt="Profile banner"
             width={1200}
             height={300}
@@ -204,12 +206,11 @@ export default function CharacterProfilePage({ params }: { params: { id: string;
                 <AvatarFallback>{characterData.name.charAt(0)}</AvatarFallback>
               </Avatar>
             </div>
-            <Button className="mt-2">Follow</Button>
           </div>
 
           <div className="mt-3">
             <h2 className="text-xl font-bold">{characterData.name}</h2>
-            <p className="text-gray-500">@{characterData.handle}</p>
+            <p className="text-gray-500">@{characterData.username}</p>
           </div>
 
           <p className="mt-3">{characterData.description}</p>

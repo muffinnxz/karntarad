@@ -380,7 +380,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                             <Badge variant="outline">{company.isPublic ? "Public" : "Private"}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1 pr-10 truncate">@{company.username}</p>
-                          <p className="text-sm mt-2 line-clamp-5 pr-10">{company.description}</p>
+                          <p className="text-sm mt-2 line-clamp-none pr-10">{company.description}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -443,7 +443,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                             <Badge variant="outline">Public</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1 pr-10 truncate">@{company.username}</p>
-                          <p className="text-sm mt-2 line-clamp-5 pr-10">{company.description}</p>
+                          <p className="text-sm mt-2 line-clamp-none pr-10">{company.description}</p>
                         </div>
                       </div>
                     </CardContent>

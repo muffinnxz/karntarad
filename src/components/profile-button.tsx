@@ -1,10 +1,9 @@
 "use client";
-
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/firebase-auth";
 import { useAuth } from "@/contexts/AuthContext";
+import Image from "next/image";
 
 export function ProfileButton() {
   const { user } = useAuth();
@@ -20,10 +19,15 @@ export function ProfileButton() {
 
   return (
     <div className="relative">
-      <Button variant="ghost" className="flex items-center gap-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-        <div className="w-8 h-8 rounded-full overflow-hidden">
+      <Button
+        size="icon"
+        variant="ghost"
+        className="flex items-center gap-2"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+      >
+        <div className="w-8 h-8 rounded-full overflow-hidden relative">
           {user?.photoURL ? (
-            <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+            <Image src={user.photoURL} alt="Profile" fill className="object-cover" />
           ) : (
             <div className="w-full h-full bg-primary flex items-center justify-center text-white">
               {user?.displayName?.[0] || user?.email?.[0] || "U"}

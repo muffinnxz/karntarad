@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Heart, ImageIcon, X, Send, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { DayType, Post } from "@/interfaces/Post";
+import { Post } from "@/interfaces/Post";
 import { Game } from "@/interfaces/Game";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from "@/lib/axios";
@@ -74,12 +74,12 @@ const PostItem = ({ post }: { post: Post }) => {
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent post click event
 
-    if (post.character) {
+    if (post.creator) {
       const query = new URLSearchParams({
-        name: post.character.name || "",
-        image: post.character.image || ""
+        name: post.creator.name || "",
+        image: post.creator.image || ""
       }).toString();
-      router.push(`/game/${post.gameId}/profile/${post.character.id}?${query}`);
+      router.push(`/game/${post.gameId}/profile/${post.creator.username}?${query}`);
     }
   };
 
@@ -87,52 +87,22 @@ const PostItem = ({ post }: { post: Post }) => {
     <Card className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors cursor-pointer">
       <div className="flex items-start space-x-3">
         {/* Avatar Clickable */}
-        {post.user ? (
-          <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
-            <AvatarImage src={post.user.photoURL} alt={post.user.displayName} />
-            <AvatarFallback>{post.user.displayName.charAt(0)}</AvatarFallback>
-          </Avatar>
-        ) : post.character ? (
-          <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
-            <AvatarImage src={post.character.image} alt={post.character.name} />
-            <AvatarFallback>{post.character.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-        ) : null}
+        <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
+          <AvatarImage src={post.creator.image} alt={post.creator.name} />
+          <AvatarFallback>{post.creator.name.charAt(0)}</AvatarFallback>
+        </Avatar>
 
         <div className="flex-1">
           <div className="flex items-center">
-            {/* Name Clickable */}
-            {post.user ? (
-              <>
-                <span
-                  className="font-semibold hover:underline cursor-pointer profile-link"
-                  onClick={handleProfileClick}
-                >
-                  {post.user.displayName}
-                </span>
-                <span
-                  className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
-                  onClick={handleProfileClick}
-                >
-                  @{post.user.displayName}
-                </span>
-              </>
-            ) : post.character ? (
-              <>
-                <span
-                  className="font-semibold hover:underline cursor-pointer profile-link"
-                  onClick={handleProfileClick}
-                >
-                  {post.character.name}
-                </span>
-                <span
-                  className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
-                  onClick={handleProfileClick}
-                >
-                  @{post.character.username}
-                </span>
-              </>
-            ) : null}
+            <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
+              {post.creator.name}
+            </span>
+            <span
+              className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
+              onClick={handleProfileClick}
+            >
+              @{post.creator.username}
+            </span>
 
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
@@ -268,7 +238,7 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const [dayFilter, setDayFilter] = useState<DayType | null>(null);
+  const [dayFilter, setDayFilter] = useState<number | null>(null);
 
   // Filter posts based on selected day
   const filteredPosts = dayFilter !== null ? posts.filter((post) => post.day === dayFilter) : posts;
@@ -364,8 +334,8 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
             </Button>
 
             <Button
-              variant={dayFilter === (visibleDay as DayType) ? "default" : "outline"}
-              onClick={() => setDayFilter(visibleDay as DayType)}
+              variant={dayFilter === visibleDay ? "default" : "outline"}
+              onClick={() => setDayFilter(visibleDay)}
               className="min-w-[40px] whitespace-nowrap"
             >
               {visibleDay}

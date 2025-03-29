@@ -262,9 +262,9 @@ export default function LoadGameScreen() {
                             <TrendingUp className="h-6 w-6 text-muted-foreground" />
                           </div>
                         )}
-                        <div>
+                        <div className="min-w-0">
                           <h3 className="line-clamp-1 text-lg font-medium">{game.company.name}</h3>
-                          <p className="text-xs text-muted-foreground">@{game.company.username || "company"}</p>
+                          <p className="text-xs text-muted-foreground truncate">@{game.company.username || "company"}</p>
                         </div>
                       </div>
                       <Button
@@ -283,8 +283,8 @@ export default function LoadGameScreen() {
                     <div className="space-y-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          Scenario:
-                          <span className="text-sm font-medium">{game.scenario.name}</span>
+                          <span>Scenario:</span>
+                          <span className="text-sm font-medium truncate">{game.scenario.name}</span>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2 pl-1">{game.scenario.description}</p>
                       </div>
@@ -344,7 +344,7 @@ export default function LoadGameScreen() {
             <DialogDescription>Select a company and scenario to start your marketing journey.</DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
+          <div className="space-y-6 py-4 overflow-hidden">
             <div className="space-y-2">
               <Label htmlFor="company">Company</Label>
               <CompanySelector selectedCompany={selectedCompany} onCompanySelect={setSelectedCompany} />
@@ -366,7 +366,7 @@ export default function LoadGameScreen() {
             </p>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="mt-2">
             <Button variant="outline" onClick={handleCloseNewGameModal} disabled={creatingGame}>
               Cancel
             </Button>

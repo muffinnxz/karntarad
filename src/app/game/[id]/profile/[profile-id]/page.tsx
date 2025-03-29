@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Heart, ArrowLeft } from "lucide-react";
 import { Post } from "@/interfaces/Post";
 import { Character } from "@/interfaces/Character";
+import { useSearchParams } from "next/navigation";
 
 // Sample character data
 const characterData: Character = {
@@ -172,7 +175,11 @@ const PostItem = ({ post }: { post: Post }) => {
 
 // Main component
 export default function CharacterProfilePage({ params }: { params: { id: string; "profile-id": string } }) {
+    const searchParams = useSearchParams();
+    const name = searchParams.get("name") || "Unknown";
+    const image = searchParams.get("image") || "/placeholder.svg";
   const BANNER_IMAGES = "/banner/character-banner-temp.png";
+
 
   return (
     <div className="max-w-full">
@@ -183,7 +190,7 @@ export default function CharacterProfilePage({ params }: { params: { id: string;
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <h1 className="text-xl font-bold">{characterData.name}</h1>
+        <h1 className="text-xl font-bold">{name}</h1>
       </div>
 
       {/* Banner and profile info */}
@@ -202,8 +209,8 @@ export default function CharacterProfilePage({ params }: { params: { id: string;
           <div className="flex justify-between">
             <div className="relative -mt-16">
               <Avatar className="h-32 w-32 border-4 border-white">
-                <AvatarImage src={characterData.image} alt={characterData.name} />
-                <AvatarFallback>{characterData.name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={image} alt={characterData.name} />
+                <AvatarFallback>{name.charAt(0)}</AvatarFallback>
               </Avatar>
             </div>
           </div>

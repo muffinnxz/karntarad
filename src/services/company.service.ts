@@ -2,7 +2,7 @@ import admin from "@/lib/firebase-admin";
 import { Company } from "@/interfaces/Company";
 import { uploadBase64 } from "@/lib/firebase-storage";
 
-export const createCompany = async (userId: string, name: string, description: string, companyProfilePicture: string, isPublic: boolean) => {
+export const createCompany = async (userId: string, name: string, description: string, companyProfilePicture: string, isPublic: boolean, username: string) => {
 	const fs = admin.firestore();
 	const companyRef = fs.collection("companies").doc();
 	const companyProfileURL = await uploadBase64(companyProfilePicture, `companies/${companyRef.id}`);
@@ -11,6 +11,7 @@ export const createCompany = async (userId: string, name: string, description: s
 		id: companyRef.id,
 		userId: userId,
 		name: name,
+		username: username,
 		description: description,
 		companyProfileURL: companyProfileURL,
 		createdAt: new Date(),
@@ -50,7 +51,7 @@ export const deleteCompany = async (companyId: string) => {
 	return companySnapshot.data();
 };
 
-export const updateCompany = async (companyId: string, name: string, description: string, companyProfilePicture: string) => {
+export const updateCompany = async (companyId: string, name: string, description: string, companyProfilePicture: string, username: string) => {
 	const fs = admin.firestore();
 
 	const randomId = crypto.randomUUID();
@@ -58,6 +59,7 @@ export const updateCompany = async (companyId: string, name: string, description
 
 	const company = {
 		name: name,
+		username: username,
 		description: description,
 		companyProfileURL: companyProfileURL,
 		isPublic: true,

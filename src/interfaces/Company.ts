@@ -2,6 +2,7 @@ export interface Company {
   id: string;
   userId: string;
   name: string;
+  username: string;
   description: string;
   companyProfileURL: string;
   isPublic: boolean;

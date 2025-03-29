@@ -30,7 +30,6 @@ export function ProfileButton() {
             </div>
           )}
         </div>
-        <span className="hidden md:inline">{user?.displayName || "Profile"}</span>
       </Button>
 
       {isMenuOpen && (

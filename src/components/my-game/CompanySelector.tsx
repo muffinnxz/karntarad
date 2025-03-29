@@ -36,7 +36,8 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
     name: "",
     description: "",
     image: null as File | null,
-    isPublic: true
+    isPublic: true,
+    username: ""
   });
 
   // State for companies fetched from the API
@@ -136,7 +137,8 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
           name: "",
           description: "",
           image: null,
-          isPublic: true
+          isPublic: true,
+          username: ""
         });
       })
       .catch((error) => {
@@ -321,6 +323,14 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                   value={newCompany.name}
                   onChange={handleNewCompanyChange}
                   placeholder="Company Name"
+                />
+              </div>
+              <div className="mb-4">
+                <Input
+                  name="username"
+                  value={newCompany.username}
+                  onChange={handleNewCompanyChange}
+                  placeholder="Username"
                 />
               </div>
               <div className="mb-4">

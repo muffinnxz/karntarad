@@ -50,14 +50,13 @@ export const deleteCompany = async (companyId: string) => {
 	return companySnapshot.data();
 };
 
-export const updateCompany = async (companyId: string, userId: string, name: string, description: string, companyProfilePicture: string) => {
+export const updateCompany = async (companyId: string, name: string, description: string, companyProfilePicture: string) => {
 	const fs = admin.firestore();
 
 	const randomId = crypto.randomUUID();
 	const companyProfileURL = await uploadBase64(companyProfilePicture, `companies/${randomId}`);
 
 	const company = {
-		userId: userId,
 		name: name,
 		description: description,
 		companyProfileURL: companyProfileURL

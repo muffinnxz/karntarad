@@ -117,7 +117,7 @@ export async function PUT(req: NextRequest) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 		}
 
-		const scenario = await updateScenario(id, user.id, name, description);
+		const scenario = await updateScenario(id, name, description);
 		return NextResponse.json(scenario, { status: 200 });
 	} catch (error) {
 		return NextResponse.json({ error: error, message: "Error updating scenario" }, { status: 500 });

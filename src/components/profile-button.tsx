@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/firebase-auth";
 import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
+import Link from "next/link";
 
 export function ProfileButton() {
   const { user } = useAuth();
@@ -38,6 +39,13 @@ export function ProfileButton() {
 
       {isMenuOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+          <Link
+            href="/my-game"
+            className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            My Game
+          </Link>
           <button
             onClick={() => {
               handleSignOut();

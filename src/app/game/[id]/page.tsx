@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,64 +13,67 @@ import { Heart, ImageIcon, X, Send, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Post } from "@/interfaces/Post";
 import { Game } from "@/interfaces/Game";
+import { useAuth } from "@/contexts/AuthContext";
+import axios from "@/lib/axios"
+
 
 // Sample data for posts
-const samplePosts: Post[] = [
-  {
-    id: "1",
-    gameId: "1",
-    character: {
-      id: "1",
-      name: "John Doe",
-      username: "johndoe",
-      image: "/placeholder.svg?height=40&width=40"
-    },
-    day: 0,
-    text: "Just launched my new website! Check it out at example.com #webdev #launch",
-    image: "/placeholder.svg?height=300&width=500",
-    numLikes: 42
-  },
-  {
-    id: "2",
-    gameId: "1",
-    character: {
-      id: "2",
-      name: "Jane Smith",
-      username: "janesmith",
-      image: "/placeholder.svg?height=40&width=40"
-    },
-    day: 1,
-    text: "Had a great meeting with @johndoe today about the upcoming project. Excited to get started!",
-    numLikes: 18
-  },
-  {
-    id: "3",
-    gameId: "1",
-    character: {
-      id: "3",
-      name: "Tech News",
-      username: "technews",
-      image: "/placeholder.svg?height=40&width=40"
-    },
-    day: 1,
-    text: "Breaking: New AI model released that can generate code from natural language descriptions. #AI #coding #technology",
-    image: "/placeholder.svg?height=300&width=500",
-    numLikes: 128
-  },
-  {
-    id: "4",
-    gameId: "1",
-    character: {
-      id: "4",
-      name: "Travel Enthusiast",
-      username: "travelbug",
-      image: "/placeholder.svg?height=40&width=40"
-    },
-    day: 2,
-    text: "Just booked my trip to Japan! Any recommendations @japantravel? #travel #japan #vacation",
-    numLikes: 76
-  }
-];
+// const samplePosts: Post[] = [
+//   {
+//     id: "1",
+//     gameId: "1",
+//     character: {
+//       id: "1",
+//       name: "John Doe",
+//       username: "johndoe",
+//       image: "/placeholder.svg?height=40&width=40"
+//     },
+//     day: 0,
+//     text: "Just launched my new website! Check it out at example.com #webdev #launch",
+//     image: "/placeholder.svg?height=300&width=500",
+//     numLikes: 42
+//   },
+//   {
+//     id: "2",
+//     gameId: "1",
+//     character: {
+//       id: "2",
+//       name: "Jane Smith",
+//       username: "janesmith",
+//       image: "/placeholder.svg?height=40&width=40"
+//     },
+//     day: 1,
+//     text: "Had a great meeting with @johndoe today about the upcoming project. Excited to get started!",
+//     numLikes: 18
+//   },
+//   {
+//     id: "3",
+//     gameId: "1",
+//     character: {
+//       id: "3",
+//       name: "Tech News",
+//       username: "technews",
+//       image: "/placeholder.svg?height=40&width=40"
+//     },
+//     day: 1,
+//     text: "Breaking: New AI model released that can generate code from natural language descriptions. #AI #coding #technology",
+//     image: "/placeholder.svg?height=300&width=500",
+//     numLikes: 128
+//   },
+//   {
+//     id: "4",
+//     gameId: "1",
+//     character: {
+//       id: "4",
+//       name: "Travel Enthusiast",
+//       username: "travelbug",
+//       image: "/placeholder.svg?height=40&width=40"
+//     },
+//     day: 2,
+//     text: "Just booked my trip to Japan! Any recommendations @japantravel? #travel #japan #vacation",
+//     numLikes: 76
+//   }
+// ];
 
 // Function to format text with @ and # highlighting
 const formatText = (id: string, text: string) => {
@@ -222,11 +225,6 @@ const NewPostForm = ({ onClose }: NewPostFormProps) => {
     <>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">New Post</h2>
-        {onClose && (
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        )}
       </div>
 
       <Textarea
@@ -270,32 +268,70 @@ const NewPostForm = ({ onClose }: NewPostFormProps) => {
 
 export default function GamePage({ params: { id } }: { params: { id: string } }) {
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [game, setGame] = useState<Game | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [gameDay, setGameDay] = useState<number>(0);
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (!id || !user) return;
+
+    const fetchGameAndPosts = async () => {
+      try {
+        // Fetch game details
+        const gameResponse = await axios.get(`/game?id=${id}`);
+        console.log("Game Response:", JSON.stringify(gameResponse.data, null, 2));
+        if (gameResponse.status !== 200) {
+          throw new Error("Failed to fetch game details");
+        }
+        setGame(gameResponse.data[0]);
+
+        // Fetch posts
+        const postsResponse = await axios.get(`/post?gameId=${id}`);
+        if (postsResponse.status !== 200) {
+          throw new Error("Failed to fetch posts");
+        }
+        setPosts(postsResponse.data);
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGameAndPosts();
+  }, [id, user]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
   //mock game data
-  const game: Game = {
-    id: id,
-    company: {
-      id: "1",
-      name: "Tech Corp",
-      username: "techcorp",
-      description: "A leading tech company specializing in innovative solutions.",
-      userId: "1",
-      companyProfileURL: "/placeholder.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    scenario: {
-      userId: "1",
-      id: "1",
-      name: "Tech Startup",
-      description: "You are the CEO of a tech startup in Silicon Valley.",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    userId: "1",
-    day: 0,
-    result: "In Progress",
-    characterList: []
-  };
+//   const gameMock: Game = {
+//     id: id,
+//     company: {
+//       id: "1",
+//       name: "Tech Corp",
+//       username: "techcorp",
+//       description: "A leading tech company specializing in innovative solutions.",
+//       userId: "1",
+//       companyProfileURL: "/placeholder.svg",
+//       isPublic: true,
+//       createdAt: new Date()
+//     },
+//     scenario: {
+//       userId: "1",
+//       id: "1",
+//       name: "Tech Startup",
+//       description: "You are the CEO of a tech startup in Silicon Valley.",
+//       isPublic: true,
+//       createdAt: new Date()
+//     },
+//     userId: "1",
+//     day: 0,
+//     result: "In Progress",
+//     characterList: []
+//   };
 
   return (
     <div className="max-w-full">
@@ -306,12 +342,12 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
           </Button>
         </Link>
         <div className="flex flex-col">
-          <h1 className="text-xl font-bold">{`Company: ${game.company.name}`}</h1>
+          <h1 className="text-xl font-bold">{`Company: ${game?.company.name}`}</h1>
           <div className="flex justify-between items-center">
             <div>
-              <span className="text-gray-600">{`Scenario: ${game.scenario.name}`}</span>
+              <span className="text-gray-600">{`Scenario: ${game?.scenario.name}`}</span>
               <span className="text-gray-500 mx-2">·</span>
-              <span className="text-gray-500">{formatDay(game.day)}</span>
+              <span className="text-gray-500">{formatDay(gameDay)}</span>
             </div>
           </div>
         </div>
@@ -322,7 +358,7 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
             <NewPostForm />
           </div>
           <div className="p-4">
-            {samplePosts.map((post) => (
+            {posts.map((post) => (
               <PostItem key={post.id} post={post} />
             ))}
           </div>

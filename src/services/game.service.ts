@@ -65,6 +65,13 @@ export const getGamesByUserId = async (userId: string) => {
 	return games.docs.map((doc) => doc.data() as Game);
 }
 
+export const getGameById = async (id: string) => {
+	const fs = admin.firestore();
+	const gamesRef = fs.collection("games").where("id", "==", id);
+	const games = await gamesRef.get();
+	return games.docs.map((doc) => doc.data() as Game);
+}
+
 export const deleteGame = async (gameId: string) => {
 	const fs = admin.firestore();
 	const gameRef = fs.collection("games").doc(gameId);

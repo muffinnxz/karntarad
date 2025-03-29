@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Heart, ImageIcon, X, Send } from "lucide-react";
+import { Heart, ImageIcon, X, Send, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Post } from "@/interfaces/Post";
 import { Game } from "@/interfaces/Game";
@@ -22,7 +22,7 @@ const samplePosts: Post[] = [
     character: {
       id: "1",
       name: "John Doe",
-      handle: "johndoe",
+      username: "johndoe",
       image: "/placeholder.svg?height=40&width=40"
     },
     day: 0,
@@ -36,7 +36,7 @@ const samplePosts: Post[] = [
     character: {
       id: "2",
       name: "Jane Smith",
-      handle: "janesmith",
+      username: "janesmith",
       image: "/placeholder.svg?height=40&width=40"
     },
     day: 1,
@@ -49,7 +49,7 @@ const samplePosts: Post[] = [
     character: {
       id: "3",
       name: "Tech News",
-      handle: "technews",
+      username: "technews",
       image: "/placeholder.svg?height=40&width=40"
     },
     day: 1,
@@ -63,7 +63,7 @@ const samplePosts: Post[] = [
     character: {
       id: "4",
       name: "Travel Enthusiast",
-      handle: "travelbug",
+      username: "travelbug",
       image: "/placeholder.svg?height=40&width=40"
     },
     day: 2,
@@ -154,7 +154,7 @@ const PostItem = ({ post }: { post: Post }) => {
               className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
               onClick={handleProfileClick}
             >
-              @{post.character?.handle}
+              @{post.character?.username}
             </span>
 
             <span className="text-gray-500 mx-2">·</span>
@@ -298,7 +298,12 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
 
   return (
     <div className="max-w-full">
-      <div className="sticky top-0 bg-white z-10 p-4 border-b">
+      <div className="flex items-center sticky top-0 bg-white z-10 p-4 border-b">
+        <Link href={`/my-game`} className="mr-4">
+            <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-5 w-5" />
+            </Button>
+        </Link>
         <div className="flex flex-col">
           <h1 className="text-xl font-bold">{`Company: ${game.company.name}`}</h1>
           <div className="flex justify-between items-center">

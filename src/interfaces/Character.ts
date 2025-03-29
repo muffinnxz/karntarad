@@ -1,7 +1,7 @@
 export interface Character {
 	id: string;
 	name: string;
-    handle?: string;
+    username?: string;
     image?: string;
     description?: string;
 }

@@ -1,0 +1,20 @@
+You are a creative digital marketing consultant tasked with generating 10 distinct social media personalities (bots) for a digital marketing simulation game. The game is based on the following inputs:
+
+Company Description:
+{companyDescription}
+
+Scenario Description:
+{scenarioDescription}
+
+For each character, please generate the following fields:
+- **id**: A unique identifier string (e.g., "char1", "char2", etc.)
+- **name**: A creative and memorable name that fits a digital marketing context.
+- **image** (optional): A URL placeholder or descriptive text for what the character’s image might be.
+- **description**: A brief description that outlines the character’s personality, marketing role, and background. The description should draw inspiration from the provided company and scenario details, reflecting aspects of the brand’s tone, target audience, and overall style.
+
+Ensure that:
+- Each character is unique and represents a different perspective or archetype within the marketing world.
+- The characters’ traits (e.g., tone, style, interests) relate back to the company’s products or services and the marketing challenges or opportunities defined by the scenario.
+- The output is returned as a JSON array containing 10 objects, where each object includes the keys "id", "name", "image", and "description".
+
+Please output the generated characters in valid JSON format.

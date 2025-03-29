@@ -49,13 +49,13 @@ export async function POST(req: NextRequest) {
 		}
 
 		const body = await req.json();
-		const { name, description, companyProfilePicture } = body;
+		const { name, description, companyProfilePicture, isPublic } = body;
 
-		if (!name || !description || !companyProfilePicture) {
+		if (!name || !description || !companyProfilePicture || !isPublic) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 		}
 
-		const company = await createCompany(user.id, name, description, companyProfilePicture);
+		const company = await createCompany(user.id, name, description, companyProfilePicture, isPublic);
 		return NextResponse.json(company, { status: 201 });
 	} catch (error) {
 		return NextResponse.json({ error: error, message: "Error creating company" }, { status: 500 });

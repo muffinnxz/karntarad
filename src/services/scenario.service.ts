@@ -2,7 +2,7 @@
 import admin from "@/lib/firebase-admin";
 import { Scenario } from "@/interfaces/Scenario";
 
-export const createScenario = async (userId: string, name: string, description: string) => {
+export const createScenario = async (userId: string, name: string, description: string, isPublic: boolean) => {
 	const fs = admin.firestore();
 	const scenarioRef = fs.collection("scenarios").doc()
 
@@ -12,6 +12,7 @@ export const createScenario = async (userId: string, name: string, description: 
 		name: name,
 		description: description,
 		createdAt: new Date(),
+		isPublic: isPublic
 	};
 
 	await scenarioRef.set(scenario);
@@ -53,7 +54,7 @@ export const updateScenario = async (scenarioId: string, userId: string, name: s
 export const getTenRandomScenarios = async (userId: string) => {
 	const fs = admin.firestore();
 	const scenarios = await fs.collection("scenarios").get();
-	const filteredScenarios = scenarios.docs.filter((doc) => doc.data().userId !== userId);
+	const filteredScenarios = scenarios.docs.filter((doc) => doc.data().userId !== userId && doc.data().isPublic);
 	const randomScenarios = filteredScenarios.sort(() => Math.random() - 0.5).slice(0, 10);
 	return randomScenarios.map((doc) => doc.data() as Scenario);
 };

@@ -50,13 +50,13 @@ export async function POST(req: NextRequest) {
 
 		const body = await req.json();
 
-		const { name, description } = body;
+		const { name, description, isPublic } = body;
 
-		if (!name || !description) {
+		if (!name || !description || !isPublic) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 		}
 
-		const scenario = await createScenario(user.id, name, description);
+		const scenario = await createScenario(user.id, name, description, isPublic);
 
 		return NextResponse.json(scenario, { status: 201 });
 	} catch (error) {

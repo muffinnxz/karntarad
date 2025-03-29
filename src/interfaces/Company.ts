@@ -4,6 +4,7 @@ export interface Company {
 	name: string;
 	description: string;
 	companyProfileURL: string;
+	isPublic: boolean;
 	createdAt: Date;
 }
 
@@ -11,6 +12,7 @@ export interface CompanyPostRequest {
 	name: string;
 	description: string;
 	companyProfilePicture: string;
+	isPublic: boolean;
 }
 
 export interface CompanyPostResponse {

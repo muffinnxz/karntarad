@@ -2,7 +2,7 @@ import admin from "@/lib/firebase-admin";
 import { Company } from "@/interfaces/Company";
 import { uploadBase64 } from "@/lib/firebase-storage";
 
-export const createCompany = async (userId: string, name: string, description: string, companyProfilePicture: string) => {
+export const createCompany = async (userId: string, name: string, description: string, companyProfilePicture: string, isPublic: boolean) => {
 	const fs = admin.firestore();
 	const companyRef = fs.collection("companies").doc();
 	const companyProfileURL = await uploadBase64(companyProfilePicture, `companies/${companyRef.id}`);
@@ -14,6 +14,7 @@ export const createCompany = async (userId: string, name: string, description: s
 		description: description,
 		companyProfileURL: companyProfileURL,
 		createdAt: new Date(),
+		isPublic: isPublic
 	};
 
 	await companyRef.set(company);
@@ -35,7 +36,7 @@ export const getCompaniesByUserId = async (userId: string) => {
 export const getTenRandomCompanies = async (userId: string) => {
 	const fs = admin.firestore();
 	const companies = await fs.collection("companies").get();
-	const filteredCompanies = companies.docs.filter((doc) => doc.data().userId !== userId);
+	const filteredCompanies = companies.docs.filter((doc) => doc.data().userId !== userId && doc.data().isPublic);
 	const randomCompanies = filteredCompanies.sort(() => Math.random() - 0.5).slice(0, 10);
 	return randomCompanies.map((doc) => doc.data() as Company);
 };

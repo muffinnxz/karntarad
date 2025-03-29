@@ -2,11 +2,26 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/landing-page/animated-section";
+import { signInWithGoogle } from "@/lib/firebase-auth";
 
 export default function KarntaradModernLoginPage() {
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleGoogleSignIn = async () => {
+        try {
+            setIsLoading(true);
+            await signInWithGoogle();
+            router.push('/'); // Redirect to home page after successful login
+        } catch (error) {
+            console.error("Google sign-in failed:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 relative">
@@ -46,6 +61,8 @@ export default function KarntaradModernLoginPage() {
                 <Button
                     variant="outline"
                     className="w-full max-w-xs flex items-center justify-center gap-3 border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                    onClick={handleGoogleSignIn}
+                    disabled={isLoading}
                 >
                     <svg
                         className="w-6 h-6"
@@ -69,7 +86,7 @@ export default function KarntaradModernLoginPage() {
                             d="M130 51.3c18.9 0 32 8.2 39.3 15.2l29.4-29.4C195 20 164.3 0 130 0 78.1 0 36.2 28.2 14.7 67l43.3 33.4c11.2-30.3 39.6-52.1 71.3-52.1z"
                         />
                     </svg>
-                    <Link href="/api/auth/google">Sign in with Google</Link>
+                    {isLoading ? "Signing in..." : "Sign in with Google"}
                 </Button>
             </AnimatedSection>
         </div>

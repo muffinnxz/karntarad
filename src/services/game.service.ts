@@ -87,6 +87,7 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
     scenario,
     characterList,
     day: 0,
+    followerCount: 10000,
     status: "in_progress",
     createdAt: new Date()
   };

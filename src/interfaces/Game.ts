@@ -10,6 +10,7 @@ export interface Game {
   characterList: Character[];
   day: number;
   status: "in_progress" | "completed";
+  followerCount: number;
   createdAt: Date;
 }
 

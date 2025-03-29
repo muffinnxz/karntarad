@@ -10,9 +10,9 @@ Inputs:
 
 For each character, generate a post that follows this structure:
 {
-  "characterId": string,  // the digital marketing characterId
-  "text": string,       // a creative post text that reflects the product (based on {{companyDescription}} and {{scenarioDescription}}) and incorporates the user's post text ({{postText}}). The post may express a positive or negative opinion. The text must always end with a space followed by the tag "@{{companyUsername}}".
-  "numLikes": number,   // initialize to 0
+  "username": string,  // the digital marketing username
+  "content": string,       // a creative post text that reflects the product (based on {{companyDescription}} and {{scenarioDescription}}) and incorporates the user's post text ({{postText}}). The post may express a positive or negative opinion. The text must always end with a space followed by the tag "@{{companyUsername}}".
+  "likes": number,   // initialize to 0
 }
 
 Generate all posts in a single JSON array output without any additional commentary or text.

@@ -120,17 +120,6 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       }
     }
 
-    // In a real app, generate a unique ID and retrieve the actual user ID.
-    const createdCompany: Company = {
-      id: `new_${Date.now()}`,
-      userId: "current_user_id",
-      name: newCompany.name,
-      description: newCompany.description,
-      companyProfileURL: base64Image || "/placeholder/company-profile.svg",
-      isPublic: newCompany.isPublic,
-      createdAt: new Date()
-    };
-
     axios
       .post("/company", {
         name: newCompany.name,

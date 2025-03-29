@@ -39,7 +39,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
   // State for scenarios fetched from the API
   const [userScenarios, setUserScenarios] = useState<Scenario[]>([]);
   const [communityScenarios, setCommunityScenarios] = useState<Scenario[]>([]);
-  
+
   // Fetch scenarios when the dialog opens
   useEffect(() => {
     if (open) {
@@ -78,8 +78,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
       console.error("Scenario name and description are required");
       return;
     }
-    
-    // Ensure isPublic is explicitly a boolean value
+
     axios
       .post("/scenario", {
         name: newScenario.name,
@@ -90,7 +89,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
         console.log("Scenario created successfully:", response.data);
         onScenarioSelect(response.data); // Pass the created scenario to the parent component
         setOpen(false); // Close the dialog
-        
+
         // Reset form
         setNewScenario({
           name: "",
@@ -116,7 +115,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
         console.log("Scenario deleted successfully");
         // Remove the scenario from the list
         setUserScenarios((prevScenarios) => prevScenarios.filter((scenario) => scenario.id !== scenarioId));
-        
+
         // If the deleted scenario was selected, clear the selection
         if (selectedScenario?.id === scenarioId) {
           onScenarioSelect(null);
@@ -164,6 +163,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
           )}
         </div>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Select or Create Scenario</DialogTitle>
@@ -171,12 +171,15 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
             Choose one of your scenarios, select a community scenario, or create a new one.
           </DialogDescription>
         </DialogHeader>
+
         <Tabs defaultValue="my-scenarios">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="my-scenarios">My Scenarios</TabsTrigger>
             <TabsTrigger value="community">Community</TabsTrigger>
             <TabsTrigger value="new">New</TabsTrigger>
           </TabsList>
+
+          {/* My Scenarios Tab */}
           <TabsContent value="my-scenarios" className="mt-4 grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
             {userScenarios.map((scenario) => (
               <Card
@@ -204,6 +207,8 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
               </Card>
             ))}
           </TabsContent>
+
+          {/* Community Tab */}
           <TabsContent value="community" className="mt-4 grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
             {communityScenarios.map((scenario) => (
               <Card
@@ -220,24 +225,39 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
               </Card>
             ))}
           </TabsContent>
+
+          {/* New Scenario Tab */}
           <TabsContent value="new">
             <div className="p-4">
+              {/* Scenario Name */}
               <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium" htmlFor="scenarioName">
+                  Scenario Name
+                </label>
                 <Input
+                  id="scenarioName"
                   name="name"
                   value={newScenario.name}
                   onChange={handleNewScenarioChange}
-                  placeholder="Scenario Name"
+                  placeholder="Enter scenario name"
                 />
               </div>
+
+              {/* Scenario Description */}
               <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium" htmlFor="scenarioDescription">
+                  Scenario Description
+                </label>
                 <Input
+                  id="scenarioDescription"
                   name="description"
                   value={newScenario.description}
                   onChange={handleNewScenarioChange}
-                  placeholder="Scenario Description"
+                  placeholder="Enter scenario description"
                 />
               </div>
+
+              {/* Is Public Checkbox */}
               <div className="mb-4 flex items-center">
                 <input
                   type="checkbox"
@@ -245,11 +265,14 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                   id="isPublic"
                   checked={newScenario.isPublic}
                   onChange={handleNewScenarioChange}
+                  className="mr-2"
                 />
-                <label htmlFor="isPublic" className="ml-2">
+                <label htmlFor="isPublic" className="text-sm">
                   Make scenario public
                 </label>
               </div>
+
+              {/* Create Button */}
               <Button onClick={handleCreateNewScenario}>Create Scenario</Button>
             </div>
           </TabsContent>

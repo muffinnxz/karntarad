@@ -73,7 +73,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button size="lg" asChild>
-                  <Link href="/signup">Play Now</Link>
+                  <Link href={user ? "/my-game" : "/signin"}>Play Now</Link>
                 </Button>
                 <Button variant="outline" size="lg" asChild>
                   <Link href="#features">Learn More</Link>
@@ -199,7 +199,7 @@ export default function LandingPage() {
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full" asChild>
-                    <Link href="/signup">Get Started</Link>
+                    <Link href={user ? "/my-game" : "/signin"}>Get Started</Link>
                   </Button>
                 </CardFooter>
               </Card>
@@ -216,7 +216,7 @@ export default function LandingPage() {
                 Join thousands of marketers who are already improving their skills with Karntarad.
               </p>
               <Button size="lg" asChild>
-                <Link href="/signup">Get Started</Link>
+                <Link href={user ? "/my-game" : "/signin"}>Get Started</Link>
               </Button>
             </motion.div>
           </div>

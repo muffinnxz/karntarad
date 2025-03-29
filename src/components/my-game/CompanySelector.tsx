@@ -56,12 +56,14 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
   // State for form errors
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // State for loading
+  // Loading state for company creation and fetching companies
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingCompanies, setIsLoadingCompanies] = useState(false);
 
   // Fetch companies when the dialog opens
   useEffect(() => {
     if (open) {
+      setIsLoadingCompanies(true);
       axios
         .get("/company")
         .then((res) => {
@@ -71,6 +73,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
         })
         .catch((error) => {
           console.error("Error fetching companies:", error);
+        })
+        .finally(() => {
+          setIsLoadingCompanies(false);
         });
     }
   }, [open]);
@@ -323,25 +328,29 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
 
           {/* My Company Tab */}
           <TabsContent value="my-company" className="flex-1 overflow-hidden flex flex-col min-h-0">
-            <div className="overflow-y-auto pr-2 space-y-4 flex-1">
-              {myCompanies.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full py-8 text-center">
-                  <Building2 className="h-12 w-12 text-muted-foreground mb-2" />
-                  <h3 className="font-medium text-lg">No companies yet</h3>
-                  <p className="text-muted-foreground text-sm mt-1 mb-4">
-                    Create your first company to get started, or explore the community companies.
-                  </p>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => setActiveTab("new")}>
-                      Create Company
-                    </Button>
-                    <Button variant="outline" onClick={() => setActiveTab("community")}>
-                      Explore Community
-                    </Button>
-                  </div>
+            {isLoadingCompanies ? (
+              <div className="flex flex-col items-center justify-center h-full py-8 text-center">
+                <p className="text-lg">Loading your companies...</p>
+              </div>
+            ) : myCompanies.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full py-8 text-center">
+                <Building2 className="h-12 w-12 text-muted-foreground mb-2" />
+                <h3 className="font-medium text-lg">No companies yet</h3>
+                <p className="text-muted-foreground text-sm mt-1 mb-4">
+                  Create your first company to get started, or explore the community companies.
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setActiveTab("new")}>
+                    Create Company
+                  </Button>
+                  <Button variant="outline" onClick={() => setActiveTab("community")}>
+                    Explore Community
+                  </Button>
                 </div>
-              ) : (
-                myCompanies.map((company) => (
+              </div>
+            ) : (
+              <div className="overflow-y-auto pr-2 space-y-4 flex-1">
+                {myCompanies.map((company) => (
                   <Card
                     key={company.id}
                     className={`relative transition-all hover:border-primary hover:shadow-sm ${
@@ -388,9 +397,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                       <span className="sr-only">Delete company</span>
                     </button>
                   </Card>
-                ))
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
 
           {/* Community Tab */}

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 // Next.js components
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -16,9 +17,7 @@ import ScenarioSelector from "@/components/my-game/ScenarioSelector";
 // Types
 import { Company } from "@/interfaces/Company";
 import { Scenario } from "@/interfaces/Scenario";
-
 import { Game } from "@/interfaces/Game";
-import GameComponent from "@/components/my-game/GameComponent";
 
 // Sample data using the Game interface
 const savedGames: Game[] = [
@@ -101,6 +100,8 @@ const savedGames: Game[] = [
 ];
 
 export default function LoadGameScreen() {
+  const router = useRouter();
+  
   // UI state
   const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
   const [showNewGameModal, setShowNewGameModal] = useState(false);
@@ -110,21 +111,12 @@ export default function LoadGameScreen() {
   const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
 
   /**
-   * Handle loading a game
+   * Handle loading a game - navigate to the game play page
    * @param id - The ID of the game to load
    */
   const handleLoadGame = (id: string) => {
     console.log(`Loading game: ${id}`);
-    
-    // Find the game with the matching ID
-    const gameToLoad = savedGames.find(game => game.id === id);
-    
-    if (gameToLoad) {
-      // Set the found game as the active game
-      setActiveGame(gameToLoad);
-    } else {
-      console.error(`Game with ID ${id} not found`);
-    }
+    router.push(`/my-game/play/${id}`);
   };
 
   /**
@@ -146,9 +138,6 @@ export default function LoadGameScreen() {
     // Implement your deletion logic here.
     setDeleteConfirmation(null);
   };
-
-  // State for active game
-  const [activeGame, setActiveGame] = useState<Game | null>(null);
 
   /**
    * Create a new game with the selected company and scenario
@@ -173,29 +162,13 @@ export default function LoadGameScreen() {
     console.log("Creating new game:", newGame);
     
     // In a real app, you would save this to your database
-    // For now, we'll just set it as the active game
-    setActiveGame(newGame);
+    // For now, we'll navigate to the new game page
     setShowNewGameModal(false);
+    router.push(`/my-game/play/${newGame.id}`);
     
     // Reset selections
     setSelectedCompany(null);
     setSelectedScenario(null);
-  };
-
-  /**
-   * Handle exiting the active game
-   */
-  const handleExitGame = () => {
-    setActiveGame(null);
-  };
-
-  /**
-   * Handle saving the game
-   */
-  const handleSaveGame = (updatedGame: Game) => {
-    console.log("Saving game:", updatedGame);
-    // In a real app, you would update the game in your database
-    setActiveGame(null);
   };
 
   return (
@@ -210,20 +183,13 @@ export default function LoadGameScreen() {
                 <span className="sr-only">Back</span>
               </Link>
             </Button>
-            <h1 className="text-2xl font-medium">{activeGame ? "Playing Game" : "Load Game"}</h1>
+            <h1 className="text-2xl font-medium">My Games</h1>
           </div>
         </header>
 
         {/* Main Content */}
         <main>
-          {activeGame ? (
-            <GameComponent 
-              initialGame={activeGame} 
-              onSave={handleSaveGame} 
-              onExit={handleExitGame} 
-            />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {/* New Game Card */}
               <Card
                 className="flex cursor-pointer flex-col justify-between border border-dashed border-muted-foreground/20 bg-background transition-all hover:border-muted-foreground/40 hover:shadow-sm"
@@ -296,7 +262,6 @@ export default function LoadGameScreen() {
                 </Card>
               ))}
             </div>
-          )}
         </main>
       </div>
 

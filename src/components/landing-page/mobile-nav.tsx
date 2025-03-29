@@ -80,19 +80,35 @@ export function MobileNav() {
                   </Link>
                 </motion.div>
 
-                {/* Sign In or Sign Out, depending on user state */}
+                {/* Sign In or My Game + Sign Out, depending on user state */}
                 {user ? (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ delay: 0.4 }}
-                    className="mt-4"
-                  >
-                    <Button variant="outline" className="w-full" onClick={handleSignOut}>
-                      Sign Out
-                    </Button>
-                  </motion.div>
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      <Link
+                        href="/my-game"
+                        className="text-lg font-medium transition-colors hover:text-primary"
+                        onClick={() => setOpen(false)}
+                      >
+                        My Game
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      transition={{ delay: 0.5 }}
+                      className="mt-4"
+                    >
+                      <Button variant="outline" className="w-full" onClick={handleSignOut}>
+                        Sign Out
+                      </Button>
+                    </motion.div>
+                  </>
                 ) : (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}

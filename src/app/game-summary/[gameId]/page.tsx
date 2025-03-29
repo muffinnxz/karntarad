@@ -14,6 +14,63 @@ import { Game } from "@/interfaces/Game";
 import axios from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
 
+interface StatsBoxProps {
+  icon: React.ReactNode;
+  title: string;
+  label: string;
+  total: number;
+  dailyData?: DailyLikes[];
+}
+
+function StatsBox({ icon, title, label, total, dailyData }: StatsBoxProps) {
+  if (!dailyData) {
+    return (
+      <Card className="w-full">
+        <CardContent className="flex items-center justify-between p-6">
+          <div className="flex items-center gap-3">
+            {icon}
+            <h3 className="text-lg font-medium">{title}</h3>
+          </div>
+          <div className="text-2xl font-bold">
+            {total.toLocaleString()} {label}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const maxLikes = Math.max(...dailyData.map((d) => d.likes));
+
+  return (
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3 mb-4">
+          {icon}
+          <h3 className="text-lg font-medium">{title}</h3>
+          <div className="ml-auto text-2xl font-bold">
+            {total.toLocaleString()} {label}
+          </div>
+        </div>
+        <div className="h-40 flex items-end gap-2">
+          {dailyData.map((data) => (
+            <div key={data.day} className="flex-1 flex flex-col items-center">
+              <div
+                className="w-full bg-blue-500 rounded-t"
+                style={{
+                  height: `${(data.likes / maxLikes) * 100}%`,
+                  minHeight: data.likes > 0 ? "8px" : "0"
+                }}
+              />
+              <div className="text-xs mt-2">{formatDay(data.day).split("-")[0]}</div>
+              <div className="text-xs text-gray-500">{data.likes}</div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 interface DailyLikes {
   day: number;
   likes: number;
@@ -255,62 +312,5 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
         </Button>
       </div>
     </div>
-  );
-}
-
-interface StatsBoxProps {
-  icon: React.ReactNode;
-  title: string;
-  label: string;
-  total: number;
-  dailyData?: DailyLikes[];
-}
-
-export function StatsBox({ icon, title, label, total, dailyData }: StatsBoxProps) {
-  if (!dailyData) {
-    return (
-      <Card className="w-full">
-        <CardContent className="flex items-center justify-between p-6">
-          <div className="flex items-center gap-3">
-            {icon}
-            <h3 className="text-lg font-medium">{title}</h3>
-          </div>
-          <div className="text-2xl font-bold">
-            {total.toLocaleString()} {label}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const maxLikes = Math.max(...dailyData.map((d) => d.likes));
-
-  return (
-    <Card className="w-full">
-      <CardContent className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          {icon}
-          <h3 className="text-lg font-medium">{title}</h3>
-          <div className="ml-auto text-2xl font-bold">
-            {total.toLocaleString()} {label}
-          </div>
-        </div>
-        <div className="h-40 flex items-end gap-2">
-          {dailyData.map((data) => (
-            <div key={data.day} className="flex-1 flex flex-col items-center">
-              <div
-                className="w-full bg-blue-500 rounded-t"
-                style={{
-                  height: `${(data.likes / maxLikes) * 100}%`,
-                  minHeight: data.likes > 0 ? "8px" : "0"
-                }}
-              />
-              <div className="text-xs mt-2">{formatDay(data.day).split("-")[0]}</div>
-              <div className="text-xs text-gray-500">{data.likes}</div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
   );
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
@@ -111,7 +112,7 @@ const formatText = (text: string) => {
       // Handle mentions
       return (
         <span key={index}>
-          <Link href={`/user/${word.substring(1)}`} className="text-blue-500 hover:underline">
+          <Link href={`/profile/${word.substring(1)}`} className="text-blue-500 hover:underline">
             {word}
           </Link>{" "}
         </span>
@@ -134,57 +135,86 @@ const formatText = (text: string) => {
 
 // Post component
 const PostItem = ({ post }: { post: Post }) => {
+    const router = useRouter();
+    
+    const handlePostClick = (e: React.MouseEvent) => {
+        if (!(e.target as HTMLElement).closest("button, .profile-link")) {
+            router.push(`/profile/${post.user.handle}/post/${post.id}`);
+        }
+    };
+
+    const handleProfileClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent post click event
+        router.push(`/profile/${post.user.name}`);
+    };
+
     return (
-        <Card className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors">
-        <div className="flex items-start space-x-3">
-            <Link href={`/profile/${post.user.id}`}>
-            <Avatar className="h-10 w-10 cursor-pointer">
-                <AvatarImage src={post.user.avatar} alt={post.user.name} />
-                <AvatarFallback>{post.user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            </Link>
-            <div className="flex-1">
-            <div className="flex items-center">
-                <Link href={`/profile/${post.user.id}`} className="font-semibold hover:underline">
-                {post.user.name}
-                </Link>
-                <Link href={`/profile/${post.user.id}`} className="text-gray-500 ml-2 hover:underline">
-                @{post.user.handle}
-                </Link>
-                <span className="text-gray-500 mx-2">·</span>
-                <span className="text-gray-500">{formatDate(post.date)}</span>
-            </div>
+        <Card 
+            className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors cursor-pointer" 
+            onClick={handlePostClick}
+        >
+            <div className="flex items-start space-x-3">
+                {/* Avatar Clickable */}
+                <Avatar 
+                    className="h-10 w-10 cursor-pointer profile-link" 
+                    onClick={handleProfileClick}
+                >
+                    <AvatarImage src={post.user.avatar} alt={post.user.name} />
+                    <AvatarFallback>{post.user.name.charAt(0)}</AvatarFallback>
+                </Avatar>
 
-            <div className="mt-1 text-gray-800">{formatText(post.content)}</div>
+                <div className="flex-1">
+                    <div className="flex items-center">
+                        {/* Name Clickable */}
+                        <span 
+                            className="font-semibold hover:underline cursor-pointer profile-link" 
+                            onClick={handleProfileClick}
+                        >
+                            {post.user.name}
+                        </span>
 
-            {post.image && (
-                <div className="mt-3 rounded-xl overflow-hidden">
-                <Image
-                    src={post.image}
-                    alt="Post image"
-                    width={500}
-                    height={300}
-                    className="w-full object-cover rounded-xl"
-                />
+                        {/* Handle Clickable */}
+                        <span 
+                            className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link" 
+                            onClick={handleProfileClick}
+                        >
+                            @{post.user.handle}
+                        </span>
+
+                        <span className="text-gray-500 mx-2">·</span>
+                        <span className="text-gray-500">{formatDate(post.date)}</span>
+                    </div>
+
+                    <div className="mt-1 text-gray-800">{formatText(post.content)}</div>
+
+                    {post.image && (
+                        <div className="mt-3 rounded-xl overflow-hidden">
+                            <Image
+                                src={post.image}
+                                alt="Post image"
+                                width={500}
+                                height={300}
+                                className="w-full object-cover rounded-xl"
+                            />
+                        </div>
+                    )}
+
+                    <div className="flex mt-3 text-gray-500">
+                        <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+                            <MessageCircle className="h-4 w-4" />
+                            <span>{post.comments}</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+                            <Repeat2 className="h-4 w-4" />
+                            <span>{post.retweets}</span>
+                        </Button>
+                        <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+                            <Heart className="h-4 w-4" />
+                            <span>{post.likes}</span>
+                        </Button>
+                    </div>
                 </div>
-            )}
-
-            <div className="flex mt-3 text-gray-500">
-                <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-                <MessageCircle className="h-4 w-4" />
-                <span>{post.comments}</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-                <Repeat2 className="h-4 w-4" />
-                <span>{post.retweets}</span>
-                </Button>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-                <Heart className="h-4 w-4" />
-                <span>{post.likes}</span>
-                </Button>
             </div>
-            </div>
-        </div>
         </Card>
     );
 };

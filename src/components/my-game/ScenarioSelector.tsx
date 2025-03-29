@@ -40,37 +40,49 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
       id: "1",
       userId: "user_1",
       name: "Existing Scenario 1",
-      description: "Description for scenario 1"
+      description: "Description for scenario 1",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "2",
       userId: "user_1",
       name: "Existing Scenario 2",
-      description: "Description for scenario 2"
+      description: "Description for scenario 2",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "4",
       userId: "user_1",
       name: "Existing Scenario 3",
-      description: "Description for scenario 3"
+      description: "Description for scenario 3",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "5",
       userId: "user_1",
       name: "Existing Scenario 4",
-      description: "Description for scenario 4"
+      description: "Description for scenario 4",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "6",
       userId: "user_1",
       name: "Existing Scenario 5",
-      description: "Description for scenario 5"
+      description: "Description for scenario 5",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "7",
       userId: "user_1",
       name: "Existing Scenario 6",
-      description: "Description for scenario 6"
+      description: "Description for scenario 6",
+      isPublic: true,
+      createdAt: new Date()
     }
   ];
 
@@ -79,7 +91,9 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
       id: "3",
       userId: "user_2",
       name: "Community Scenario",
-      description: "Description for community scenario"
+      description: "Description for community scenario",
+      isPublic: true,
+      createdAt: new Date()
     }
   ];
 
@@ -111,7 +125,9 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
       id: `new_${Date.now()}`,
       userId: "current_user_id",
       name: newScenario.name,
-      description: newScenario.description
+      description: newScenario.description,
+      isPublic: true,
+      createdAt: new Date()
     };
     
     onScenarioSelect(createdScenario);

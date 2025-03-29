@@ -44,42 +44,54 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       userId: "user_1",
       name: "My Company A",
       description: "This is my first company.",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "2",
       userId: "user_1",
       name: "My Company B",
       description: "This is my second company.",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "3",
       userId: "user_1",
       name: "My Company C",
       description: "This is my third company.",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "4",
       userId: "user_1",
       name: "My Company D",
       description: "This is my fourth company.",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "5",
       userId: "user_1",
       name: "My Company E",
       description: "This is my fifth company.",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "6",
       userId: "user_1",
       name: "My Company F",
       description: "This is my sixth company.",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     }
   ];
 
@@ -90,14 +102,18 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       userId: "user_2",
       name: "Community Company X",
       description: "A great community company.",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     {
       id: "4",
       userId: "user_3",
       name: "Community Company Y",
       description: "Another awesome community company.",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     }
   ];
 
@@ -169,7 +185,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       userId: "current_user_id",
       name: newCompany.name,
       description: newCompany.description,
-      image: base64Image
+      companyProfileURL: base64Image || "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     };
 
     onCompanySelect(createdCompany);
@@ -199,10 +217,10 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
           {selectedCompany ? (
             <>
               <div className="flex items-center gap-3">
-                {selectedCompany.image && (
+                {selectedCompany.companyProfileURL && (
                   <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-md">
                     <Image
-                      src={selectedCompany.image}
+                      src={selectedCompany.companyProfileURL}
                       alt={selectedCompany.name}
                       width={40}
                       height={40}
@@ -262,9 +280,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
               >
                 <CardHeader>
                   <div className="flex items-start gap-4">
-                    {company.image && (
+                    {company.companyProfileURL && (
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image src={company.image} alt={company.name} width={64} height={64} className="object-cover" />
+                        <Image src={company.companyProfileURL} alt={company.name} width={64} height={64} className="object-cover" />
                       </div>
                     )}
                     <div className="flex-1">
@@ -289,9 +307,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
               >
                 <CardHeader>
                   <div className="flex items-start gap-4">
-                    {company.image && (
+                    {company.companyProfileURL && (
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image src={company.image} alt={company.name} width={64} height={64} className="object-cover" />
+                        <Image src={company.companyProfileURL} alt={company.name} width={64} height={64} className="object-cover" />
                       </div>
                     )}
                     <div className="flex-1">

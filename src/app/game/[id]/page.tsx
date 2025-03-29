@@ -277,17 +277,23 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       id: "1",
       name: "Tech Corp",
       description: "A leading tech company specializing in innovative solutions.",
-      userId: "1"
+      userId: "1",
+      companyProfileURL: "/placeholder.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     scenario: {
       userId: "1",
       id: "1",
       name: "Tech Startup",
-      description: "You are the CEO of a tech startup in Silicon Valley."
+      description: "You are the CEO of a tech startup in Silicon Valley.",
+      isPublic: true,
+      createdAt: new Date()
     },
     userId: "1",
     day: 0,
-    result: "In Progress"
+    result: "In Progress",
+    characterList: []
   };
 
   return (

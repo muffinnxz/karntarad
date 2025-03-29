@@ -189,7 +189,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                   <FileText className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-foreground">{selectedScenario.name}</div>
+                  <div className="font-medium text-foreground truncate">{selectedScenario.name}</div>
                   <div className="text-xs text-muted-foreground truncate">{selectedScenario.description}</div>
                 </div>
                 <Badge variant="outline" className="ml-auto">
@@ -283,7 +283,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-medium text-lg">{scenario.name}</h3>
+                          <h3 className="font-medium text-lg truncate max-w-[75%]">{scenario.name}</h3>
                           <Badge variant="outline">{scenario.isPublic ? "Public" : "Private"}</Badge>
                         </div>
                         <p className="text-sm mt-2 line-clamp-none pr-10">{scenario.description}</p>
@@ -332,7 +332,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium text-lg">{scenario.name}</h3>
+                            <h3 className="font-medium text-lg truncate max-w-[75%]">{scenario.name}</h3>
                             <Badge variant="outline">Public</Badge>
                           </div>
                           <p className="text-sm mt-2 line-clamp-none pr-10">{scenario.description}</p>

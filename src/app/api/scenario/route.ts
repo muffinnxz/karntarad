@@ -3,6 +3,7 @@ import { authMiddleware } from "@/middleware/authMiddleware";
 import { getUser } from "@/services/user.service";
 import { createScenario, getTenRandomScenarios, getScenariosByUserId, deleteScenario, updateScenario } from "@/services/scenario.service";
 
+export const maxDuration = 300;
 
 /**
  * ✅ Handles GET request for fetching 2 types of scenarios

@@ -9,71 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Heart, ImageIcon, X, Send, ArrowLeft } from "lucide-react";
+import { Heart, ImageIcon, X, Send, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Post } from "@/interfaces/Post";
 import { Game } from "@/interfaces/Game";
 import { useAuth } from "@/contexts/AuthContext";
-import axios from "@/lib/axios"
-
-
-// Sample data for posts
-// const samplePosts: Post[] = [
-//   {
-//     id: "1",
-//     gameId: "1",
-//     character: {
-//       id: "1",
-//       name: "John Doe",
-//       username: "johndoe",
-//       image: "/placeholder.svg?height=40&width=40"
-//     },
-//     day: 0,
-//     text: "Just launched my new website! Check it out at example.com #webdev #launch",
-//     image: "/placeholder.svg?height=300&width=500",
-//     numLikes: 42
-//   },
-//   {
-//     id: "2",
-//     gameId: "1",
-//     character: {
-//       id: "2",
-//       name: "Jane Smith",
-//       username: "janesmith",
-//       image: "/placeholder.svg?height=40&width=40"
-//     },
-//     day: 1,
-//     text: "Had a great meeting with @johndoe today about the upcoming project. Excited to get started!",
-//     numLikes: 18
-//   },
-//   {
-//     id: "3",
-//     gameId: "1",
-//     character: {
-//       id: "3",
-//       name: "Tech News",
-//       username: "technews",
-//       image: "/placeholder.svg?height=40&width=40"
-//     },
-//     day: 1,
-//     text: "Breaking: New AI model released that can generate code from natural language descriptions. #AI #coding #technology",
-//     image: "/placeholder.svg?height=300&width=500",
-//     numLikes: 128
-//   },
-//   {
-//     id: "4",
-//     gameId: "1",
-//     character: {
-//       id: "4",
-//       name: "Travel Enthusiast",
-//       username: "travelbug",
-//       image: "/placeholder.svg?height=40&width=40"
-//     },
-//     day: 2,
-//     text: "Just booked my trip to Japan! Any recommendations @japantravel? #travel #japan #vacation",
-//     numLikes: 76
-//   }
-// ];
+import axios from "@/lib/axios";
 
 // Function to format text with @ and # highlighting
 const formatText = (id: string, text: string) => {
@@ -127,13 +68,19 @@ const formatDay = (day: number) => {
   }
 };
 
-// Post component
 const PostItem = ({ post }: { post: Post }) => {
   const router = useRouter();
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent post click event
-    router.push(`/game/${post.gameId}/profile/${post.character?.id}`);
+
+    if (post.creator) {
+      const query = new URLSearchParams({
+        name: post.creator.name || "",
+        image: post.creator.image || ""
+      }).toString();
+      router.push(`/game/${post.gameId}/profile/${post.creator.username}?${query}`);
+    }
   };
 
   return (
@@ -141,23 +88,20 @@ const PostItem = ({ post }: { post: Post }) => {
       <div className="flex items-start space-x-3">
         {/* Avatar Clickable */}
         <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
-          <AvatarImage src={post.character?.image} alt={post.character?.name} />
-          <AvatarFallback>{post.character?.name.charAt(0)}</AvatarFallback>
+          <AvatarImage src={post.creator.image} alt={post.creator.name} />
+          <AvatarFallback>{post.creator.name.charAt(0)}</AvatarFallback>
         </Avatar>
 
         <div className="flex-1">
           <div className="flex items-center">
-            {/* Name Clickable */}
             <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
-              {post.character?.name}
+              {post.creator.name}
             </span>
-
-            {/* Handle Clickable */}
             <span
               className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
               onClick={handleProfileClick}
             >
-              @{post.character?.username}
+              @{post.creator.username}
             </span>
 
             <span className="text-gray-500 mx-2">·</span>
@@ -192,18 +136,38 @@ const PostItem = ({ post }: { post: Post }) => {
 
 interface NewPostFormProps {
   onClose?: () => void;
+  gameId: string;
+  day: number;
 }
 
-const NewPostForm = ({ onClose }: NewPostFormProps) => {
+const NewPostForm = ({ onClose, gameId, day }: NewPostFormProps) => {
   const [text, setText] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleSubmit = () => {
-    console.log("Submitting post:", { text, image });
-    setText("");
-    setImage(null);
-    if (onClose) onClose();
+  const handleSubmit = async () => {
+    if (!text.trim() && !image) {
+      console.error("Post cannot be empty.");
+      return;
+    }
+
+    try {
+      await axios.post("/post", {
+        gameId: gameId,
+        day: day,
+        text: text,
+        image: image
+      });
+
+      console.log("Post submitted successfully:");
+
+      // Clear input fields
+      setText("");
+      setImage(null);
+      if (onClose) onClose();
+    } catch (error) {
+      console.error("Error submitting post:", error);
+    }
   };
 
   const handleImageUpload = () => {
@@ -236,11 +200,11 @@ const NewPostForm = ({ onClose }: NewPostFormProps) => {
 
       {image && (
         <div className="relative mb-4">
-          <Image src={image} alt="Uploaded image" width={500} height={300} className="w-full rounded-lg" />
+          <Image src={image} alt="Uploaded image" width={256} height={256} className="rounded-lg" />
           <Button
             variant="destructive"
             size="sm"
-            className="absolute top-2 right-2 rounded-full p-1 h-8 w-8"
+            className="absolute top-2 left-2 rounded-full p-1 h-8 w-8"
             onClick={() => setImage(null)}
           >
             <X className="h-4 w-4" />
@@ -272,8 +236,23 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [gameDay, setGameDay] = useState<number>(0);
-  const { user } = useAuth()
+  const { user } = useAuth();
+
+  const [dayFilter, setDayFilter] = useState<number | null>(null);
+
+  // Filter posts based on selected day
+  const filteredPosts = dayFilter !== null ? posts.filter((post) => post.day === dayFilter) : posts;
+
+  // State for the visible day in the carousel
+  const [visibleDay, setVisibleDay] = useState<number>(0);
+
+  const navigate = (direction: "prev" | "next") => {
+    if (direction === "prev") {
+      setVisibleDay((prev) => (prev > 0 ? prev - 1 : 6));
+    } else {
+      setVisibleDay((prev) => (prev < 6 ? prev + 1 : 0));
+    }
+  };
 
   useEffect(() => {
     if (!id || !user) return;
@@ -306,32 +285,6 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
-  //mock game data
-//   const gameMock: Game = {
-//     id: id,
-//     company: {
-//       id: "1",
-//       name: "Tech Corp",
-//       username: "techcorp",
-//       description: "A leading tech company specializing in innovative solutions.",
-//       userId: "1",
-//       companyProfileURL: "/placeholder.svg",
-//       isPublic: true,
-//       createdAt: new Date()
-//     },
-//     scenario: {
-//       userId: "1",
-//       id: "1",
-//       name: "Tech Startup",
-//       description: "You are the CEO of a tech startup in Silicon Valley.",
-//       isPublic: true,
-//       createdAt: new Date()
-//     },
-//     userId: "1",
-//     day: 0,
-//     result: "In Progress",
-//     characterList: []
-//   };
 
   return (
     <div className="max-w-full">
@@ -347,7 +300,7 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
             <div>
               <span className="text-gray-600">{`Scenario: ${game?.scenario.name}`}</span>
               <span className="text-gray-500 mx-2">·</span>
-              <span className="text-gray-500">{formatDay(gameDay)}</span>
+              <span className="text-gray-500">{formatDay(game?.day ?? 0)}</span>
             </div>
           </div>
         </div>
@@ -355,15 +308,45 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       <ScrollArea className="h-[calc(100vh-80px)]">
         <div className="max-w-xl mx-auto">
           <div className="p-4 border-b bg-white">
-            <NewPostForm />
+            <NewPostForm gameId={id} day={game?.day ?? 0} />
           </div>
           <div className="p-4">
-            {posts.map((post) => (
+            {filteredPosts.map((post) => (
               <PostItem key={post.id} post={post} />
             ))}
           </div>
         </div>
       </ScrollArea>
+
+      <div className="fixed bottom-4 left-4">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => navigate("prev")} className="h-8 w-8">
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="flex gap-2">
+            <Button
+              variant={dayFilter === null ? "default" : "outline"}
+              onClick={() => setDayFilter(null)}
+              className="min-w-[60px]"
+            >
+              All
+            </Button>
+
+            <Button
+              variant={dayFilter === visibleDay ? "default" : "outline"}
+              onClick={() => setDayFilter(visibleDay)}
+              className="min-w-[40px] whitespace-nowrap"
+            >
+              {visibleDay}
+            </Button>
+          </div>
+
+          <Button variant="ghost" size="icon" onClick={() => navigate("next")} className="h-8 w-8">
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
       <div className="fixed bottom-4 right-4">
         <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -371,7 +354,7 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
             <Button onClick={() => setShowModal(true)}>New Post</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
-            <NewPostForm onClose={() => setShowModal(false)} />
+            <NewPostForm onClose={() => setShowModal(false)} gameId={id} day={game?.day ?? 0} />
           </DialogContent>
         </Dialog>
       </div>

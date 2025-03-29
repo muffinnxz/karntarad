@@ -5,9 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileNav } from "@/components/landing-page/mobile-nav";
 import { FeatureCardAdvanced } from "@/components/landing-page/feature-card";
-import { AnimatedSection } from "@/components/landing-page/animated-section";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfileButton } from "@/components/profile-button";
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 }
+};
 
 export default function LandingPage() {
   const { user, loading } = useAuth();

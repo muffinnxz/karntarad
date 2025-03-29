@@ -3,6 +3,8 @@ import { createGame, getGamesByUserId, getGameById, deleteGame, updateGame } fro
 import { authMiddleware } from "@/middleware/authMiddleware";
 import { getUser } from "@/services/user.service";
 
+export const maxDuration = 300;
+
 /**
  * ✅ Handles GET request for fetching a game by ID or all games by user ID
  * @param request - The request object

@@ -9,6 +9,8 @@ import { getGame, updateGame } from "@/services/game.service";
 import path from "path";
 import fs from "fs";
 
+export const maxDuration = 300;
+
 export async function POST(req: NextRequest) {
   // Authenticate user
   const auth = await authMiddleware(req);

@@ -14,8 +14,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Post } from "@/interfaces/Post";
 import { Game } from "@/interfaces/Game";
 import { useAuth } from "@/contexts/AuthContext";
-import axios from "@/lib/axios"
-
+import axios from "@/lib/axios";
 
 // Sample data for posts
 // const samplePosts: Post[] = [
@@ -272,8 +271,8 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [gameDay, setGameDay] = useState<number>(0);
-  const { user } = useAuth()
+  const [gameDay] = useState<number>(0);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!id || !user) return;
@@ -307,31 +306,31 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
   //mock game data
-//   const gameMock: Game = {
-//     id: id,
-//     company: {
-//       id: "1",
-//       name: "Tech Corp",
-//       username: "techcorp",
-//       description: "A leading tech company specializing in innovative solutions.",
-//       userId: "1",
-//       companyProfileURL: "/placeholder.svg",
-//       isPublic: true,
-//       createdAt: new Date()
-//     },
-//     scenario: {
-//       userId: "1",
-//       id: "1",
-//       name: "Tech Startup",
-//       description: "You are the CEO of a tech startup in Silicon Valley.",
-//       isPublic: true,
-//       createdAt: new Date()
-//     },
-//     userId: "1",
-//     day: 0,
-//     result: "In Progress",
-//     characterList: []
-//   };
+  //   const gameMock: Game = {
+  //     id: id,
+  //     company: {
+  //       id: "1",
+  //       name: "Tech Corp",
+  //       username: "techcorp",
+  //       description: "A leading tech company specializing in innovative solutions.",
+  //       userId: "1",
+  //       companyProfileURL: "/placeholder.svg",
+  //       isPublic: true,
+  //       createdAt: new Date()
+  //     },
+  //     scenario: {
+  //       userId: "1",
+  //       id: "1",
+  //       name: "Tech Startup",
+  //       description: "You are the CEO of a tech startup in Silicon Valley.",
+  //       isPublic: true,
+  //       createdAt: new Date()
+  //     },
+  //     userId: "1",
+  //     day: 0,
+  //     result: "In Progress",
+  //     characterList: []
+  //   };
 
   return (
     <div className="max-w-full">

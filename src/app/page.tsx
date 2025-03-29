@@ -60,9 +60,9 @@ export default function LandingPage() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen w-full overflow-x-hidden">
+        <div className="flex flex-col min-h-screen w-full overflow-x-hidden relative">
             {/* Header */}
-            <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <header className="fixed top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                 <div className="container mx-auto max-w-full flex h-16 items-center justify-between py-4 px-4 md:px-6">
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -256,194 +256,77 @@ export default function LandingPage() {
                                     Pricing Plans
                                 </h2>
                                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                                    Choose the perfect plan for your marketing
-                                    simulation needs.
+                                    For now, enjoy our free plan and gain full
+                                    access to every function of Karntarad.
                                 </p>
                             </div>
+                            <div className="mx-auto grid max-w-7xl gap-6 py-12 lg:grid-cols-1">
+                                <AnimatedSection
+                                    delay={0.2}
+                                    direction="up"
+                                    threshold={0.3}
+                                    className="flex flex-col h-full"
+                                >
+                                    <motion.div
+                                        whileHover={{ scale: 1.03 }}
+                                        transition={{
+                                            type: "spring",
+                                            stiffness: 300,
+                                        }}
+                                        className="h-full"
+                                    >
+                                        <Card className="flex flex-col h-full">
+                                            <CardHeader>
+                                                <CardTitle>Starter</CardTitle>
+                                                <CardDescription>
+                                                    Perfect for individual users
+                                                </CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="flex-grow">
+                                                <div className="text-4xl font-bold">
+                                                    Free
+                                                </div>
+                                                <ul className="mt-4 space-y-2">
+                                                    <li className="flex items-center">
+                                                        <span className="ml-2">
+                                                            Full access to all
+                                                            functions
+                                                        </span>
+                                                    </li>
+                                                    <li className="flex items-center">
+                                                        <span className="ml-2">
+                                                            Unlimited scenario
+                                                            creation
+                                                        </span>
+                                                    </li>
+                                                    <li className="flex items-center">
+                                                        <span className="ml-2">
+                                                            Complete company
+                                                            management
+                                                        </span>
+                                                    </li>
+                                                    <li className="flex items-center">
+                                                        <span className="ml-2">
+                                                            Community access
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </CardContent>
+                                            <CardFooter>
+                                                <Button
+                                                    className="w-full"
+                                                    asChild
+                                                >
+                                                    <Link href="/signup">
+                                                        Get Started
+                                                    </Link>
+                                                </Button>
+                                            </CardFooter>
+                                        </Card>
+                                    </motion.div>
+                                </AnimatedSection>
+                            </div>
                         </AnimatedSection>
-                        <div className="mx-auto grid max-w-7xl gap-6 py-12 lg:grid-cols-3">
-                            <AnimatedSection
-                                delay={0.2}
-                                direction="up"
-                                threshold={0.3}
-                                className="flex flex-col h-full"
-                            >
-                                <motion.div
-                                    whileHover={{ scale: 1.03 }}
-                                    transition={{
-                                        type: "spring",
-                                        stiffness: 300,
-                                    }}
-                                    className="h-full"
-                                >
-                                    <Card className="flex flex-col h-full">
-                                        <CardHeader>
-                                            <CardTitle>Starter</CardTitle>
-                                            <CardDescription>
-                                                Perfect for individual users
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow">
-                                            <div className="text-4xl font-bold">
-                                                Free
-                                            </div>
-                                            <ul className="mt-4 space-y-2">
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Basic scenarios
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Single company
-                                                        management
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Community access
-                                                    </span>
-                                                </li>
-                                            </ul>
-                                        </CardContent>
-                                        <CardFooter>
-                                            <Button className="w-full" asChild>
-                                                <Link href="/signup">
-                                                    Get Started
-                                                </Link>
-                                            </Button>
-                                        </CardFooter>
-                                    </Card>
-                                </motion.div>
-                            </AnimatedSection>
-
-                            <AnimatedSection
-                                delay={0.3}
-                                direction="up"
-                                threshold={0.3}
-                                className="flex flex-col h-full"
-                            >
-                                <motion.div
-                                    whileHover={{ scale: 1.03 }}
-                                    transition={{
-                                        type: "spring",
-                                        stiffness: 300,
-                                    }}
-                                    className="h-full"
-                                >
-                                    <Card className="flex flex-col h-full">
-                                        <CardHeader>
-                                            <CardTitle>Professional</CardTitle>
-                                            <CardDescription>
-                                                For advanced users and teams
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow">
-                                            <div className="text-4xl font-bold">
-                                                $29
-                                                <span className="text-lg font-normal">
-                                                    /month
-                                                </span>
-                                            </div>
-                                            <ul className="mt-4 space-y-2">
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Advanced scenarios
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Multi-company management
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Scenario creation tools
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Performance analytics
-                                                    </span>
-                                                </li>
-                                            </ul>
-                                        </CardContent>
-                                        <CardFooter>
-                                            <Button className="w-full" asChild>
-                                                <Link href="/signup">
-                                                    Get Started
-                                                </Link>
-                                            </Button>
-                                        </CardFooter>
-                                    </Card>
-                                </motion.div>
-                            </AnimatedSection>
-
-                            <AnimatedSection
-                                delay={0.4}
-                                direction="up"
-                                threshold={0.3}
-                                className="flex flex-col h-full"
-                            >
-                                <motion.div
-                                    whileHover={{ scale: 1.03 }}
-                                    transition={{
-                                        type: "spring",
-                                        stiffness: 300,
-                                    }}
-                                    className="h-full"
-                                >
-                                    <Card className="flex flex-col h-full">
-                                        <CardHeader>
-                                            <CardTitle>Enterprise</CardTitle>
-                                            <CardDescription>
-                                                For agencies with custom
-                                                solutions
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow">
-                                            <div className="text-4xl font-bold">
-                                                Custom
-                                            </div>
-                                            <ul className="mt-4 space-y-2">
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Custom scenarios
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Unlimited companies
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Advanced analytics
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Dedicated support
-                                                    </span>
-                                                </li>
-                                                <li className="flex items-center">
-                                                    <span className="ml-2">
-                                                        Custom integrations
-                                                    </span>
-                                                </li>
-                                            </ul>
-                                        </CardContent>
-                                        <CardFooter>
-                                            <Button className="w-full" asChild>
-                                                <Link href="/contact">
-                                                    Contact Sales
-                                                </Link>
-                                            </Button>
-                                        </CardFooter>
-                                    </Card>
-                                </motion.div>
-                            </AnimatedSection>
-                        </div>
                     </div>
                 </section>
 
@@ -479,9 +362,6 @@ export default function LandingPage() {
                                 <Button size="lg" asChild>
                                     <Link href="/signup">Get Started</Link>
                                 </Button>
-                                <Button variant="outline" size="lg" asChild>
-                                    <Link href="/demo">Schedule a Demo</Link>
-                                </Button>
                             </motion.div>
                         </AnimatedSection>
                     </div>
@@ -489,10 +369,10 @@ export default function LandingPage() {
             </main>
 
             {/* Footer */}
-            <footer className="w-full border-t py-6 md:py-12">
+            <footer className="w-full border-t py-6 md:py-12 bg-background">
                 <AnimatedSection delay={0.1} threshold={0.1} className="w-full">
-                    <div className="container mx-auto max-w-full flex flex-col items-center justify-center gap-4 px-4 md:px-6 md:flex-row md:justify-between">
-                        <div className="flex flex-col items-center gap-4 md:items-start md:gap-2">
+                    <div className="container mx-auto max-w-full flex flex-col md:flex-row items-center justify-between px-4 md:px-6">
+                        <div className="flex flex-col items-center md:items-start gap-2">
                             <Link
                                 href="/"
                                 className="flex items-center space-x-2"
@@ -506,32 +386,30 @@ export default function LandingPage() {
                                 marketing scenarios.
                             </p>
                         </div>
-                        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
-                            <div className="flex flex-col items-center gap-2 md:items-start">
-                                <h3 className="text-sm font-medium">Product</h3>
-                                <Link
-                                    href="#features"
-                                    className="text-sm text-muted-foreground hover:text-primary"
-                                >
-                                    Features
-                                </Link>
-                                <Link
-                                    href="#pricing"
-                                    className="text-sm text-muted-foreground hover:text-primary"
-                                >
-                                    Pricing
-                                </Link>
-                                <Link
-                                    href="/demo"
-                                    className="text-sm text-muted-foreground hover:text-primary"
-                                >
-                                    Demo
-                                </Link>
-                            </div>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Link
+                                href="#features"
+                                className="text-sm text-muted-foreground hover:text-primary"
+                            >
+                                Features
+                            </Link>
+                            <Link
+                                href="#pricing"
+                                className="text-sm text-muted-foreground hover:text-primary"
+                            >
+                                Pricing
+                            </Link>
+                            <Link
+                                href="#contact"
+                                className="text-sm text-muted-foreground hover:text-primary"
+                            >
+                                Contact
+                            </Link>
                         </div>
                     </div>
-                    <div className="container mx-auto max-w-full flex flex-col items-center justify-center gap-4 border-t py-4 md:flex-row md:justify-between md:py-6 px-4 md:px-6 mt-4">
-                        <p className="text-center text-sm text-muted-foreground md:text-left">
+
+                    <div className="container mx-auto max-w-full flex flex-col md:flex-row items-center justify-between gap-4 border-t py-10 px-4 md:px-6 mt-4">
+                        <p className="text-center text-sm text-muted-foreground">
                             © {new Date().getFullYear()} Karntarad. All rights
                             reserved.
                         </p>

@@ -17,54 +17,86 @@ import ScenarioSelector from "@/components/my-game/ScenarioSelector";
 import { Company } from "@/interfaces/Company";
 import { Scenario } from "@/interfaces/Scenario";
 
-// Define interface for saved games
-interface SavedGame {
-  id: string;
-  company: string;
-  description: string;
-  role: string;
-  scenario: string;
-  day: string;
-  logoUrl: string;
-}
+import { Game } from "@/interfaces/Game";
+import GameComponent from "@/components/my-game/GameComponent";
 
-// Sample data with added logoUrl
-const savedGames: SavedGame[] = [
+// Sample data using the Game interface
+const savedGames: Game[] = [
   {
     id: "1",
-    company: "Acme Marketing",
-    description: "Digital marketing agency specializing in growth strategies",
-    role: "Marketing Director",
-    scenario: "Product Launch",
-    day: "Day 0 - Monday",
-    logoUrl: "/placeholder/company-profile.svg"
+    company: {
+      id: "c1",
+      userId: "user_1",
+      name: "Acme Marketing",
+      description: "Digital marketing agency specializing in growth strategies",
+      image: "/placeholder/company-profile.svg"
+    },
+    scenario: {
+      id: "s1",
+      userId: "user_1",
+      name: "Product Launch",
+      description: "Launch a new product in a competitive market"
+    },
+    userId: "user_1",
+    day: 0,
+    result: "Game in progress"
   },
   {
     id: "2",
-    company: "TechVision",
-    description: "Software development company focused on AI solutions",
-    role: "Product Manager",
-    scenario: "Market Research",
-    day: "Day 2 - Wednesday",
-    logoUrl: "/placeholder/company-profile.svg"
+    company: {
+      id: "c2",
+      userId: "user_1",
+      name: "TechVision",
+      description: "Software development company focused on AI solutions",
+      image: "/placeholder/company-profile.svg"
+    },
+    scenario: {
+      id: "s2",
+      userId: "user_1",
+      name: "Market Research",
+      description: "Conduct market research for a new product line"
+    },
+    userId: "user_1",
+    day: 2,
+    result: "Completed market analysis"
   },
   {
     id: "3",
-    company: "Global Solutions",
-    description: "International consulting firm for business transformation",
-    role: "Sales Executive",
-    scenario: "Client Negotiation",
-    day: "Day 1 - Tuesday",
-    logoUrl: "/placeholder/company-profile.svg"
+    company: {
+      id: "c3",
+      userId: "user_1",
+      name: "Global Solutions",
+      description: "International consulting firm for business transformation",
+      image: "/placeholder/company-profile.svg"
+    },
+    scenario: {
+      id: "s3",
+      userId: "user_1",
+      name: "Client Negotiation",
+      description: "Negotiate a major contract with a potential client"
+    },
+    userId: "user_1",
+    day: 1,
+    result: "Initial client meeting completed"
   },
   {
     id: "4",
-    company: "Innovate Health",
-    description: "Healthcare technology provider improving patient outcomes",
-    role: "Strategy Consultant",
-    scenario: "Expansion Planning",
-    day: "Day 3 - Thursday",
-    logoUrl: "/placeholder/company-profile.svg"
+    company: {
+      id: "c4",
+      userId: "user_1",
+      name: "Innovate Health",
+      description: "Healthcare technology provider improving patient outcomes",
+      image: "/placeholder/company-profile.svg"
+    },
+    scenario: {
+      id: "s4",
+      userId: "user_1",
+      name: "Expansion Planning",
+      description: "Plan expansion into new markets"
+    },
+    userId: "user_1",
+    day: 3,
+    result: "Expansion strategy drafted"
   }
 ];
 
@@ -83,7 +115,16 @@ export default function LoadGameScreen() {
    */
   const handleLoadGame = (id: string) => {
     console.log(`Loading game: ${id}`);
-    // Implement your load logic here.
+    
+    // Find the game with the matching ID
+    const gameToLoad = savedGames.find(game => game.id === id);
+    
+    if (gameToLoad) {
+      // Set the found game as the active game
+      setActiveGame(gameToLoad);
+    } else {
+      console.error(`Game with ID ${id} not found`);
+    }
   };
 
   /**
@@ -106,6 +147,9 @@ export default function LoadGameScreen() {
     setDeleteConfirmation(null);
   };
 
+  // State for active game
+  const [activeGame, setActiveGame] = useState<Game | null>(null);
+
   /**
    * Create a new game with the selected company and scenario
    */
@@ -116,17 +160,42 @@ export default function LoadGameScreen() {
       return;
     }
     
-    console.log("Creating new game with:", { 
-      company: selectedCompany.name,
-      scenario: selectedScenario.name
-    });
+    // Create a new game object following the Game interface
+    const newGame: Game = {
+      id: `game_${Date.now()}`,
+      company: selectedCompany,
+      scenario: selectedScenario,
+      userId: "current_user_id", // In a real app, get this from auth context
+      day: 0,
+      result: "Game started"
+    };
     
-    // Implement your game creation logic here.
+    console.log("Creating new game:", newGame);
+    
+    // In a real app, you would save this to your database
+    // For now, we'll just set it as the active game
+    setActiveGame(newGame);
     setShowNewGameModal(false);
     
     // Reset selections
     setSelectedCompany(null);
     setSelectedScenario(null);
+  };
+
+  /**
+   * Handle exiting the active game
+   */
+  const handleExitGame = () => {
+    setActiveGame(null);
+  };
+
+  /**
+   * Handle saving the game
+   */
+  const handleSaveGame = (updatedGame: Game) => {
+    console.log("Saving game:", updatedGame);
+    // In a real app, you would update the game in your database
+    setActiveGame(null);
   };
 
   return (
@@ -141,81 +210,93 @@ export default function LoadGameScreen() {
                 <span className="sr-only">Back</span>
               </Link>
             </Button>
-            <h1 className="text-2xl font-medium">Load Game</h1>
+            <h1 className="text-2xl font-medium">{activeGame ? "Playing Game" : "Load Game"}</h1>
           </div>
         </header>
 
         {/* Main Content */}
         <main>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {/* New Game Card */}
-            <Card
-              className="flex cursor-pointer flex-col justify-between border border-dashed border-muted-foreground/20 bg-background transition-all hover:border-muted-foreground/40 hover:shadow-sm"
-              onClick={() => setShowNewGameModal(true)}
-            >
-              <CardContent className="flex flex-1 flex-col items-center justify-center p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <Calendar className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <h3 className="mt-4 text-lg font-medium">New Game</h3>
-                <p className="mt-1 text-center text-sm text-muted-foreground">Start a new scenario</p>
-              </CardContent>
-              <CardFooter className="p-4">
-                <Button className="w-full" variant="outline">
-                  Create
-                </Button>
-              </CardFooter>
-            </Card>
-
-            {/* Saved Game Cards */}
-            {savedGames.map((game) => (
-              <Card key={game.id} className="cursor-pointer transition-all hover:shadow-sm bg-background">
-                <CardContent className="p-4">
-                  {/* Top row with Company Logo, Name, and Delete Icon */}
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full overflow-hidden border border-muted flex-shrink-0">
-                        <Image
-                          src={game.logoUrl || "/placeholder.svg"}
-                          alt={`${game.company} logo`}
-                          width={40}
-                          height={40}
-                          className="object-cover"
-                        />
-                      </div>
-                      <h3 className="line-clamp-1 text-lg font-medium">{game.company}</h3>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={(e) => handleDeleteGame(game.id, e)}
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                      <span className="sr-only">Delete</span>
-                    </Button>
+          {activeGame ? (
+            <GameComponent 
+              initialGame={activeGame} 
+              onSave={handleSaveGame} 
+              onExit={handleExitGame} 
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {/* New Game Card */}
+              <Card
+                className="flex cursor-pointer flex-col justify-between border border-dashed border-muted-foreground/20 bg-background transition-all hover:border-muted-foreground/40 hover:shadow-sm"
+                onClick={() => setShowNewGameModal(true)}
+              >
+                <CardContent className="flex flex-1 flex-col items-center justify-center p-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                    <Calendar className="h-6 w-6 text-muted-foreground" />
                   </div>
-
-                  <p className="line-clamp-2 text-sm text-muted-foreground mb-4">{game.description}</p>
-
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <span className="text-sm font-medium">Scenario:</span>
-                      <span className="text-sm text-muted-foreground">{game.scenario}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{game.day}</span>
-                    </div>
-                  </div>
+                  <h3 className="mt-4 text-lg font-medium">New Game</h3>
+                  <p className="mt-1 text-center text-sm text-muted-foreground">Start a new scenario</p>
                 </CardContent>
-                <CardFooter className="p-4 pt-0">
-                  <Button className="w-full" variant="default" onClick={() => handleLoadGame(game.id)}>
-                    Load Game
+                <CardFooter className="p-4">
+                  <Button className="w-full" variant="outline">
+                    Create
                   </Button>
                 </CardFooter>
               </Card>
-            ))}
-          </div>
+
+              {/* Saved Game Cards */}
+              {savedGames.map((game) => (
+                <Card 
+                  key={game.id} 
+                  className="cursor-pointer transition-all hover:shadow-sm bg-background"
+                  onClick={() => handleLoadGame(game.id)}
+                >
+                  <CardContent className="p-4">
+                    {/* Top row with Company Logo, Name, and Delete Icon */}
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full overflow-hidden border border-muted flex-shrink-0">
+                          <Image
+                            src={game.company.image || "/placeholder.svg"}
+                            alt={`${game.company.name} logo`}
+                            width={40}
+                            height={40}
+                            className="object-cover"
+                          />
+                        </div>
+                        <h3 className="line-clamp-1 text-lg font-medium">{game.company.name}</h3>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => handleDeleteGame(game.id, e)}
+                      >
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                        <span className="sr-only">Delete</span>
+                      </Button>
+                    </div>
+
+                    <p className="line-clamp-2 text-sm text-muted-foreground mb-4">{game.company.description}</p>
+
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        <span className="text-sm font-medium">Scenario:</span>
+                        <span className="text-sm text-muted-foreground">{game.scenario.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Day {game.day}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-4 pt-0">
+                    <Button className="w-full" variant="default" onClick={() => handleLoadGame(game.id)}>
+                      Load Game
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          )}
         </main>
       </div>
 

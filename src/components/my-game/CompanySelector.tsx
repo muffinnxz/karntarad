@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -120,7 +121,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
-        const img = new Image();
+        const img = document.createElement("img");
         img.onload = () => {
           const canvas = document.createElement("canvas");
           canvas.width = img.width;
@@ -152,7 +153,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       console.error("Company name and description are required");
       return;
     }
-    
+
     let base64Image: string | undefined;
     if (newCompany.image) {
       try {
@@ -161,7 +162,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
         console.error("Error converting image:", error);
       }
     }
-    
+
     // In a real app, generate a unique ID and retrieve the actual user ID.
     const createdCompany: Company = {
       id: `new_${Date.now()}`, // More unique ID
@@ -170,10 +171,10 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       description: newCompany.description,
       image: base64Image
     };
-    
+
     onCompanySelect(createdCompany);
     setOpen(false);
-    
+
     // Reset form
     setNewCompany({
       name: "",
@@ -200,10 +201,12 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
               <div className="flex items-center gap-3">
                 {selectedCompany.image && (
                   <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-md">
-                    <img
+                    <Image
                       src={selectedCompany.image}
                       alt={selectedCompany.name}
-                      className="h-full w-full object-cover"
+                      width={40}
+                      height={40}
+                      className="object-cover"
                     />
                   </div>
                 )}
@@ -261,7 +264,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                   <div className="flex items-start gap-4">
                     {company.image && (
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                        <img src={company.image} alt={company.name} className="h-full w-full object-cover" />
+                        <Image src={company.image} alt={company.name} width={64} height={64} className="object-cover" />
                       </div>
                     )}
                     <div className="flex-1">
@@ -288,7 +291,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                   <div className="flex items-start gap-4">
                     {company.image && (
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                        <img src={company.image} alt={company.name} className="h-full w-full object-cover" />
+                        <Image src={company.image} alt={company.name} width={64} height={64} className="object-cover" />
                       </div>
                     )}
                     <div className="flex-1">

@@ -22,7 +22,7 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
 
 	const characterContent = fs.readFileSync(generateCharacterFile, "utf-8");
 
-	const characterPrompt = characterContent.replace("{companyDescription}", company.description).replace("{scenarioDescription}", scenario.description);
+	const characterPrompt = characterContent.replace("{{companyDescription}}", company.description).replace("{{scenarioDescription}}", scenario.description);
 
 	const together = new Together({
 		apiKey: process.env.TOGETHER_API_KEY,

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "@/lib/axios";
 import { Button } from "@/components/ui/button";
@@ -120,21 +120,24 @@ const PostItem = ({ post }: { post: Post }) => {
 };
 
 export default function UserProfilePage({ params }: { params: { id: string; "profile-id": string } }) {
-  const searchParams = useSearchParams();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Character | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOwnProfile, setIsOwnProfile] = useState(false);
 
+  // Extract params to fix exhaustive deps warning
+  const gameId = params.id;
+  const profileId = params["profile-id"];
+
   useEffect(() => {
     // Fetch game data which includes both company and characterList
     axios
-      .get(`/game?id=${params.id}`)
+      .get(`/game?id=${gameId}`)
       .then((response) => {
         const gameData = response.data[0];
         // If the profile-id matches the company's username, use company data
-        if (params["profile-id"] === gameData.company.username) {
+        if (profileId === gameData.company.username) {
           const companyProfile: Character = {
             id: gameData.company.id, // Ensure the 'id' property is included
             name: gameData.company.name,
@@ -149,7 +152,7 @@ export default function UserProfilePage({ params }: { params: { id: string; "pro
           }
         } else {
           // Otherwise, use a character from the characterList
-          const foundCharacter = gameData.characterList.find((ch: Character) => ch.username === params["profile-id"]);
+          const foundCharacter = gameData.characterList.find((ch: Character) => ch.username === profileId);
           setProfile(foundCharacter);
           if (user && foundCharacter && user.displayName === foundCharacter.name) {
             setIsOwnProfile(true);
@@ -159,18 +162,18 @@ export default function UserProfilePage({ params }: { params: { id: string; "pro
       .catch((error) => {
         console.error("Error fetching game data:", error);
       });
-  }, [params.id, params["profile-id"], user]);
+  }, [gameId, profileId, user]);
 
   useEffect(() => {
     // Once the profile is set, fetch all posts for the game and filter by the profile's username
     if (profile) {
       axios
-        .get(`/post?gameId=${params.id}`)
+        .get(`/post?gameId=${gameId}`)
         .then((response) => {
           const allPosts: Post[] = response.data;
           const profilePosts = allPosts.filter((post) => post.creator.username === profile.username);
           // Sort posts by day in ascending order
-          profilePosts.sort((a, b) => a.day - b.day);
+          profilePosts.sort((a, b) => b.day - a.day);
           setPosts(profilePosts);
         })
         .catch((error) => {
@@ -180,7 +183,7 @@ export default function UserProfilePage({ params }: { params: { id: string; "pro
           setLoading(false);
         });
     }
-  }, [profile, params.id]);
+  }, [profile, gameId]);
 
   if (!profile || loading) return <p>Loading...</p>;
 
@@ -193,7 +196,7 @@ export default function UserProfilePage({ params }: { params: { id: string; "pro
     <div className="max-w-full">
       {/* Header with back button */}
       <div className="sticky top-0 bg-white z-10 p-4 border-b flex items-center">
-        <Link href={`/game/${params.id}`} className="mr-4">
+        <Link href={`/game/${gameId}`} className="mr-4">
           <Button variant="ghost" size="icon">
             <ArrowLeft className="h-5 w-5" />
           </Button>

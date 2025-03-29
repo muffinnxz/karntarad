@@ -144,6 +144,13 @@ export default function LoadGameScreen() {
       });
   };
 
+  // Handler to close New Game modal and clear selected fields.
+  const handleCloseNewGameModal = () => {
+    setShowNewGameModal(false);
+    setSelectedCompany(null);
+    setSelectedScenario(null);
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -276,7 +283,7 @@ export default function LoadGameScreen() {
                     <div className="space-y-3">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          Scenario
+                          Scenario:
                           <span className="text-sm font-medium">{game.scenario.name}</span>
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-2 pl-1">{game.scenario.description}</p>
@@ -323,7 +330,14 @@ export default function LoadGameScreen() {
       </AlertDialog>
 
       {/* New Game Dialog */}
-      <Dialog open={showNewGameModal} onOpenChange={setShowNewGameModal}>
+      <Dialog
+        open={showNewGameModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseNewGameModal();
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create New Game</DialogTitle>
@@ -353,7 +367,7 @@ export default function LoadGameScreen() {
           )}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewGameModal(false)} disabled={creatingGame}>
+            <Button variant="outline" onClick={handleCloseNewGameModal} disabled={creatingGame}>
               Cancel
             </Button>
             <Button

@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
 	const body = await req.json();
 
 	try {
-		const { id: userId, name, email } = body;
+		const { id: userId, displayName, email, photoURL } = body;
 
-		if (!userId || !name || !email) {
+		if (!userId || !displayName || !email) {
 			return NextResponse.json({ message: "Bad request: Missing required fields" }, { status: 400 });
 		}
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 			return NextResponse.json({ message: "User already exists" }, { status: 200 });
 		}
 
-		const user = await createUser(userId, name, email);
+		const user = await createUser(userId, displayName, email, photoURL);
 		if (!user) {
 			throw new Error("User creation failed");
 		}

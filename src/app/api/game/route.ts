@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createGame, getGamesByUserId, deleteGame, updateGame } from "@/services/game.service";
+import { createGame, getGamesByUserId, getGameById, deleteGame, updateGame } from "@/services/game.service";
 import { authMiddleware } from "@/middleware/authMiddleware";
 import { getUser } from "@/services/user.service";
 
 /**
- * ✅ Handles GET request for fetching all games by user id
+ * ✅ Handles GET request for fetching a game by ID or all games by user ID
  * @param request - The request object
- * @returns A response object with all games by user id
+ * @returns A response object with the game details or all games by user ID
  */
 export async function GET(request: NextRequest) {
 	const auth = await authMiddleware(request);
@@ -17,10 +17,26 @@ export async function GET(request: NextRequest) {
 		if (!user.exists) {
 			return NextResponse.json({ error: "User not found" }, { status: 401 });
 		}
-		const games = await getGamesByUserId(user.id);
-		return NextResponse.json(games);
+
+		const { searchParams } = new URL(request.url);
+		const gameId = searchParams.get("id");
+
+		if (gameId) {
+			// Fetch a single game by ID
+			const game = await getGameById(gameId);
+            console.log("Fetched Game:", game);
+
+            if (!game || Object.keys(game).length === 0) {
+                return NextResponse.json({ error: "Game not found" }, { status: 404 });
+            }
+            return NextResponse.json(game);
+		} else {
+			// Fetch all games by user ID
+			const games = await getGamesByUserId(user.id);
+			return NextResponse.json(games);
+		}
 	} catch (error) {
-		return NextResponse.json({ error: error, message: "Error fetching games" }, { status: 500 });
+		return NextResponse.json({ error: error, message: "Error fetching game(s)" }, { status: 500 });
 	}
 }
 

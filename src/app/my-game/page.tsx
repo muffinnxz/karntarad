@@ -144,7 +144,6 @@ export default function LoadGameScreen() {
       });
   };
 
-  // Handler to close New Game modal and clear selected fields.
   const handleCloseNewGameModal = () => {
     setShowNewGameModal(false);
     setSelectedCompany(null);
@@ -175,7 +174,7 @@ export default function LoadGameScreen() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-12">
+      <div className="mx-auto max-w-2xl px-4 py-8 md:px-6 md:py-12">
         <header className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -224,7 +223,7 @@ export default function LoadGameScreen() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="space-y-4">
               <Card
                 className="flex cursor-pointer flex-col justify-between border border-dashed bg-muted/30 transition-all hover:border-primary/30 hover:shadow-sm group"
                 onClick={() => setShowNewGameModal(true)}

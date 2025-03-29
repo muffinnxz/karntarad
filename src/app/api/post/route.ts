@@ -113,8 +113,20 @@ export async function POST(req: NextRequest) {
     const characterListStr = JSON.stringify(game.characterList, null, 2);
     const postText = text;
 
-    // allPreviousPost should be a JSON string of the previous posts
-    const allPreviousPostStr = JSON.stringify(allPreviousPost);
+    const filteredPreviousPosts = postsSnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        // Use "user" if available, otherwise "character" as the creator
+        creator: data.creator,
+        text: data.text,
+        numLikes: data.numLikes,
+        image: data.image, // this field is optional
+      };
+    });
+    
+    console.log("Filtered previous posts:", filteredPreviousPosts);
+    const allPreviousPostStr = JSON.stringify(filteredPreviousPosts, null, 2);
+    console.log("All previous posts string:", allPreviousPostStr);
 
     // Replace the placeholders in the template using regex
     const finalCharacterPrompt = characterCreatePostContent
@@ -208,7 +220,7 @@ export async function POST(req: NextRequest) {
     await updateGame(
       gameId,
       day + 1,
-      day + 1 === 6 ? "completed" : "in_progress",
+      day + 1 === 7 ? "completed" : "in_progress",
       game.followerCount + likeCountJson.likes
     );
   } catch (error) {

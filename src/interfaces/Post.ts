@@ -9,5 +9,7 @@ export interface Post {
     text: string;
     numLikes: number;
     image?: string;
+    numRetweets?: number;
+    numComments?: number;
 }
 

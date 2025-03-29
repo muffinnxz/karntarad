@@ -42,7 +42,8 @@ const savedGames: Game[] = [
     },
     userId: "user_1",
     day: 0,
-    result: "Game in progress"
+    result: "Game in progress",
+    characterList: []
   },
   {
     id: "2",
@@ -65,7 +66,8 @@ const savedGames: Game[] = [
     },
     userId: "user_1",
     day: 2,
-    result: "Completed market analysis"
+    result: "Completed market analysis",
+    characterList: []
   },
   {
     id: "3",
@@ -88,7 +90,8 @@ const savedGames: Game[] = [
     },
     userId: "user_1",
     day: 1,
-    result: "Initial client meeting completed"
+    result: "Initial client meeting completed",
+    characterList: []
   },
   {
     id: "4",
@@ -111,7 +114,8 @@ const savedGames: Game[] = [
     },
     userId: "user_1",
     day: 3,
-    result: "Expansion strategy drafted"
+    result: "Expansion strategy drafted",
+    characterList: []
   }
 ];
 
@@ -172,7 +176,8 @@ export default function LoadGameScreen() {
       scenario: selectedScenario,
       userId: "current_user_id", // In a real app, get this from auth context
       day: 0,
-      result: "Game started"
+      result: "Game started",
+      characterList: []
     };
     
     console.log("Creating new game:", newGame);

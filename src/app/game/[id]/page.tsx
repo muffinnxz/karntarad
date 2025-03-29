@@ -292,7 +292,8 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
     },
     userId: "1",
     day: 0,
-    result: "In Progress"
+    result: "In Progress",
+    characterList: []
   };
 
   return (

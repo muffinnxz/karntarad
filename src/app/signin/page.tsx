@@ -1,9 +1,10 @@
-"use client";;
+"use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { signInWithGoogle } from "@/lib/firebase-auth";
+import axios from "@/lib/axios";
 
 export default function KarntaradModernLoginPage() {
   const router = useRouter();
@@ -12,7 +13,23 @@ export default function KarntaradModernLoginPage() {
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      await signInWithGoogle();
+      const res = await signInWithGoogle();
+      const { uid, displayName, email, photoURL } = res.user;
+      try {
+        await axios.get(`/user`);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (err: any) {
+        if (err.response && err.response.status === 404) {
+          await axios.post("/user", {
+            id: uid,
+            displayName: displayName,
+            email: email,
+            photoURL: photoURL
+          });
+        } else {
+          console.error("Error fetching user:", err);
+        }
+      }
       router.push("/"); // Redirect to home page after successful login
     } catch (error) {
       console.error("Google sign-in failed:", error);

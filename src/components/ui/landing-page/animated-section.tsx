@@ -1,7 +1,7 @@
 "use client";
 
-import type React from "react";
-import { motion } from "framer-motion";
+import React, { useRef, useEffect } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 
 interface AnimatedSectionProps {
     children: React.ReactNode;
@@ -22,8 +22,25 @@ export function AnimatedSection({
     once = true,
     threshold = 0.1,
 }: AnimatedSectionProps) {
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = useReducedMotion();
+    
+    // Use ref instead of state for better performance
+    const hasAnimated = useRef(false);
+    const isMounted = useRef(false);
+    
+    useEffect(() => {
+        isMounted.current = true;
+        
+        // Cleanup
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
 
     const getDirection = () => {
+        if (prefersReducedMotion) return {};
+        
         switch (direction) {
             case "up":
                 return { y: distance };
@@ -38,12 +55,34 @@ export function AnimatedSection({
         }
     };
 
+    // Optimize animations
+    const variants = {
+        hidden: { 
+            opacity: 0, 
+            ...getDirection() 
+        },
+        visible: { 
+            opacity: 1, 
+            x: 0, 
+            y: 0,
+            transition: {
+                duration: 0.5,
+                delay: delay,
+                ease: "easeOut"
+            }
+        }
+    };
+
     return (
         <motion.div
-            initial={{ opacity: 0, ...getDirection() }}
-            whileInView={{ opacity: 1, x: 0, y: 0 }}
-            viewport={{ once, amount: threshold }}
-            transition={{ duration: 0.6, delay }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ 
+                once, 
+                amount: threshold,
+                margin: "-50px 0px" 
+            }}
+            variants={variants}
             className={className}
         >
             {children}

@@ -7,6 +7,6 @@ export interface Game {
 	company: Company;
 	scenario: Scenario;
 	userId: string;
-	days: number;
+	day: number;
 	result: string;
 }

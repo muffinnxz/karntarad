@@ -11,5 +11,7 @@ export interface Post {
     text: string;
     numLikes: number;
     image?: string;
+    banner?: string
+    bio?: string
 }
 

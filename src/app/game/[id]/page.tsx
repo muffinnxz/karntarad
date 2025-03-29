@@ -75,7 +75,7 @@ const samplePosts: Post[] = [
 ]
 
 // Function to format text with @ and # highlighting
-const formatText = (text: string) => {
+const formatText = (id: string, text: string) => {
   // Split the text by spaces to process each word
   const words = text.split(" ")
 
@@ -84,7 +84,7 @@ const formatText = (text: string) => {
       // Handle mentions
       return (
         <span key={index}>
-          <Link href={`/profile/${word.substring(1)}`} className="text-blue-500 hover:underline">
+          <Link href={`/game/${id}/profile/${word.substring(1)}`} className="text-blue-500 hover:underline">
             {word}
           </Link>{" "}
         </span>
@@ -163,7 +163,7 @@ const PostItem = ({ post }: { post: Post }) => {
                         <span className="text-gray-500">{formatDay(post.day)}</span>
                     </div>
 
-                    <div className="mt-1 text-gray-800">{formatText(post.text)}</div>
+                    <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
 
                     {post.image && (
                         <div className="mt-3 rounded-xl overflow-hidden">

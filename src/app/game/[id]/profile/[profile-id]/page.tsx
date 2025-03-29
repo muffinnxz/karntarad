@@ -3,13 +3,9 @@ import Image from "next/image"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Heart, MessageCircle, Repeat2, Calendar, MapPin, LinkIcon, ArrowLeft } from "lucide-react"
+import { Heart, ArrowLeft } from "lucide-react"
 import { Post } from "@/interfaces/Post"
 import { Character } from "@/interfaces/Character"
-
-// Define TypeScript interfaces
 
 // Sample character data
 const characterData: Character = {
@@ -20,8 +16,7 @@ const characterData: Character = {
   description: "Building AI bots for various use cases. Passionate about automation and AI.",
 }
 
-// Sample engagement history (mentions)
-const engagementHistory: Post[] = [
+const postData: Post[] = [
   {
     id: "1",
     gameId: "1",
@@ -83,35 +78,35 @@ const engagementHistory: Post[] = [
 
 
 // Function to format text with @ and # highlighting
-const formatText = (text: string) => {
-  // Split the text by spaces to process each word
-  const words = text.split(" ")
-
-  return words.map((word, index) => {
-    if (word.startsWith("@")) {
-      // Handle mentions
-      return (
-        <span key={index}>
-          <Link href={`/character/${word.substring(1)}`} className="text-blue-500 hover:underline">
-            {word}
-          </Link>{" "}
-        </span>
-      )
-    } else if (word.startsWith("#")) {
-      // Handle hashtags
-      return (
-        <span key={index}>
-          <Link href={`/hashtag/${word.substring(1)}`} className="text-blue-500 hover:underline">
-            {word}
-          </Link>{" "}
-        </span>
-      )
-    } else {
-      // Regular text
-      return <span key={index}>{word} </span>
-    }
-  })
-}
+const formatText = (id: string, text: string) => {
+    // Split the text by spaces to process each word
+    const words = text.split(" ")
+  
+    return words.map((word, index) => {
+      if (word.startsWith("@")) {
+        // Handle mentions
+        return (
+          <span key={index}>
+            <Link href={`/game/${id}/profile/${word.substring(1)}`} className="text-blue-500 hover:underline">
+              {word}
+            </Link>{" "}
+          </span>
+        )
+      } else if (word.startsWith("#")) {
+        // Handle hashtags
+        return (
+          <span key={index}>
+            <Link href={`/hashtag/${word.substring(1)}`} className="text-blue-500 hover:underline">
+              {word}
+            </Link>{" "}
+          </span>
+        )
+      } else {
+        // Regular text
+        return <span key={index}>{word} </span>
+      }
+    })
+  }
 
 const formatDay = (day: number) => {
     switch(day) {
@@ -143,7 +138,7 @@ const PostItem = ({ post }: { post: Post }) => {
             <span className="text-gray-500">{formatDay(post.day)}</span>
           </div>
 
-          <div className="mt-1 text-gray-800">{formatText(post.text)}</div>
+          <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
 
           {post.image && (
             <div className="mt-3 rounded-xl overflow-hidden">
@@ -224,7 +219,7 @@ export default function CharacterProfilePage({
             </div>
 
             <div>
-                {engagementHistory.map((post) => (
+                {postData.map((post) => (
                 <PostItem key={post.id} post={post} />
                 ))}
             </div>

@@ -12,8 +12,9 @@ export const getUser = async (userId: string): Promise<DocumentSnapshot<Document
 
 export const createUser = async (
 	userId: string,
-	name: string,
+	displayName: string,
 	email: string,
+	photoURL: string,
 ): Promise<User | null> => {
 	try {
 		const fs = admin.firestore();
@@ -21,8 +22,9 @@ export const createUser = async (
 
 		const user: User = {
 			id: userId,
-			name: name,
+			displayName: displayName,
 			email: email,
+			photoURL: photoURL || "",
 			createdAt: new Date(),
 		};
 		await userRef.set(user);

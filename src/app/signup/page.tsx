@@ -1,13 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/landing-page/animated-section";
 
 export default function KarntaradModernLoginPage() {
+    const router = useRouter();
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 relative">
+            {/* Back Button */}
+            <button
+                onClick={() => router.back()}
+                className="absolute top-4 left-4 flex items-center text-gray-700 hover:text-gray-900 focus:outline-none"
+            >
+                <svg
+                    className="w-5 h-5 mr-1"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 19l-7-7 7-7"
+                    />
+                </svg>
+                Back
+            </button>
+
             <AnimatedSection
                 delay={0.1}
                 direction="up"

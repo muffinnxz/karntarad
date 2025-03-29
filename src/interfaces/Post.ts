@@ -10,3 +10,4 @@ export interface Post {
     numLikes: number;
     image?: string;
 }
+

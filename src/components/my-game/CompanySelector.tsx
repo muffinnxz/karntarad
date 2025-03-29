@@ -269,7 +269,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-foreground">{selectedCompany.name}</div>
+                  <div className="font-medium text-foreground truncate">{selectedCompany.name}</div>
                   <div className="text-xs text-muted-foreground truncate">{selectedCompany.description}</div>
                 </div>
                 <Badge variant="outline" className="ml-auto">
@@ -376,11 +376,11 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium text-lg">{company.name}</h3>
+                            <h3 className="font-medium text-lg truncate max-w-[75%]">{company.name}</h3>
                             <Badge variant="outline">{company.isPublic ? "Public" : "Private"}</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">@{company.username}</p>
-                          <p className="text-sm mt-2 line-clamp-2">{company.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1 pr-10 truncate">@{company.username}</p>
+                          <p className="text-sm mt-2 line-clamp-5 pr-10">{company.description}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -439,11 +439,11 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium text-lg">{company.name}</h3>
+                            <h3 className="font-medium text-lg truncate max-w-[75%]">{company.name}</h3>
                             <Badge variant="outline">Public</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">@{company.username}</p>
-                          <p className="text-sm mt-2 line-clamp-2">{company.description}</p>
+                          <p className="text-sm text-muted-foreground mt-1 pr-10 truncate">@{company.username}</p>
+                          <p className="text-sm mt-2 line-clamp-5 pr-10">{company.description}</p>
                         </div>
                       </div>
                     </CardContent>

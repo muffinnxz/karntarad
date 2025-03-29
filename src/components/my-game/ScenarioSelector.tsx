@@ -36,6 +36,9 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
     isPublic: true
   });
 
+  // State for form errors
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
   // State for scenarios fetched from the API
   const [userScenarios, setUserScenarios] = useState<Scenario[]>([]);
   const [communityScenarios, setCommunityScenarios] = useState<Scenario[]>([]);
@@ -58,10 +61,12 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
 
   /**
    * Update new scenario state on input change.
-   * @param e - The input change event
+   * Also clear errors for the corresponding field.
    */
   const handleNewScenarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, type, value, checked } = e.target;
+    // Clear error for this field
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
     setNewScenario((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value
@@ -74,8 +79,15 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
    */
   const handleCreateNewScenario = () => {
     // Validate required fields
-    if (!newScenario.name || !newScenario.description) {
-      console.error("Scenario name and description are required");
+    const errors: { [key: string]: string } = {};
+    if (!newScenario.name) {
+      errors.name = "Scenario name is required";
+    }
+    if (!newScenario.description) {
+      errors.description = "Scenario description is required";
+    }
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
@@ -90,12 +102,13 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
         onScenarioSelect(response.data); // Pass the created scenario to the parent component
         setOpen(false); // Close the dialog
 
-        // Reset form
+        // Reset form and errors
         setNewScenario({
           name: "",
           description: "",
           isPublic: true
         });
+        setFormErrors({});
       })
       .catch((error) => {
         console.error("Error creating scenario:", error);
@@ -103,8 +116,8 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
   };
 
   /**
-   * Delete a scenario using the API
-   * @param scenarioId - The ID of the scenario to delete
+   * Delete a scenario using the API.
+   * @param scenarioId - The ID of the scenario to delete.
    */
   const handleDeleteScenario = (scenarioId: string) => {
     axios
@@ -128,7 +141,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
 
   /**
    * Handle scenario selection.
-   * @param scenario - The selected scenario
+   * @param scenario - The selected scenario.
    */
   const handleSelectScenario = (scenario: Scenario) => {
     onScenarioSelect(scenario);
@@ -232,7 +245,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
               {/* Scenario Name */}
               <div className="mb-4">
                 <label className="block mb-1 text-sm font-medium" htmlFor="scenarioName">
-                  Scenario Name
+                  Scenario Name <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="scenarioName"
@@ -240,13 +253,15 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                   value={newScenario.name}
                   onChange={handleNewScenarioChange}
                   placeholder="Enter scenario name"
+                  className={formErrors.name ? "border-destructive" : ""}
                 />
+                {formErrors.name && <p className="text-xs text-destructive mt-1">{formErrors.name}</p>}
               </div>
 
               {/* Scenario Description */}
               <div className="mb-4">
                 <label className="block mb-1 text-sm font-medium" htmlFor="scenarioDescription">
-                  Scenario Description
+                  Scenario Description <span className="text-destructive">*</span>
                 </label>
                 <Input
                   id="scenarioDescription"
@@ -254,7 +269,9 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                   value={newScenario.description}
                   onChange={handleNewScenarioChange}
                   placeholder="Enter scenario description"
+                  className={formErrors.description ? "border-destructive" : ""}
                 />
+                {formErrors.description && <p className="text-xs text-destructive mt-1">{formErrors.description}</p>}
               </div>
 
               {/* Is Public Checkbox */}

@@ -47,6 +47,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
   const [myCompanies, setMyCompanies] = useState<Company[]>([]);
   const [communityCompanies, setCommunityCompanies] = useState<Company[]>([]);
 
+  // State for form errors
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
   // Fetch companies when the dialog opens
   useEffect(() => {
     if (open) {
@@ -65,13 +68,14 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
 
   /**
    * Update new company state when user types, selects a file, or toggles the checkbox.
-   * For file input, we generate a preview URL.
-   * @param e - The input change event
+   * Also clears error for the field being updated.
    */
   const handleNewCompanyChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, type, value, checked, files } = e.target as HTMLInputElement;
+    // Clear error for this field
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+
     if (files && files[0] && name === "image") {
-      // Create an object URL for the image preview
       const file = files[0];
       setPreviewUrl(URL.createObjectURL(file));
       setNewCompany((prev) => ({
@@ -121,8 +125,23 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
    */
   const handleCreateNewCompany = async () => {
     // Validate required fields
-    if (!newCompany.name || !newCompany.description) {
-      console.error("Company name and description are required");
+    const errors: { [key: string]: string } = {};
+    if (!newCompany.name) {
+      errors.name = "Company name is required";
+    }
+    if (!newCompany.username) {
+      errors.username = "Company username is required";
+    } else if (!/^[a-z0-9_]+$/.test(newCompany.username)) {
+      errors.username = "Username must contain only lowercase letters, numbers, or underscores";
+    }
+    if (!newCompany.description) {
+      errors.description = "Company description is required";
+    }
+    if (!newCompany.image) {
+      errors.image = "Company logo is required";
+    }
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
@@ -145,9 +164,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       })
       .then((response) => {
         console.log("Company created successfully:", response.data);
-        onCompanySelect(response.data); // Pass the created company to the parent component
-        setOpen(false); // Close the dialog
-        // Reset form and clear preview
+        onCompanySelect(response.data);
+        setOpen(false);
+        // Reset form, errors, and preview
         setNewCompany({
           name: "",
           description: "",
@@ -156,6 +175,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
           username: ""
         });
         setPreviewUrl(null);
+        setFormErrors({});
       })
       .catch((error) => {
         console.error("Error creating company:", error);
@@ -163,8 +183,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
   };
 
   /**
-   * Delete a company using the API
-   * @param companyId - The ID of the company to delete
+   * Delete a company using the API.
    */
   const handleDeleteCompany = (companyId: string) => {
     axios
@@ -173,10 +192,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       })
       .then(() => {
         console.log("Company deleted successfully");
-        // Remove the company from the list
         setMyCompanies((prevCompanies) => prevCompanies.filter((company) => company.id !== companyId));
-
-        // If the deleted company was selected, clear the selection
         if (selectedCompany?.id === companyId) {
           onCompanySelect(null);
         }
@@ -195,7 +211,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
   };
 
   /**
-   * Clear the selected image and preview
+   * Clear the selected image and preview.
    */
   const handleClearImage = () => {
     setNewCompany((prev) => ({ ...prev, image: null }));
@@ -228,7 +244,6 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                   </div>
                 </div>
               </div>
-              {/* Clear Selection Button */}
               <button
                 className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-muted/80 hover:bg-muted"
                 onClick={(e) => {
@@ -342,41 +357,55 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
           <TabsContent value="new">
             <div className="p-4">
               <div className="mb-4">
-                <label className="block mb-1 text-sm font-medium">Company Name</label>
+                <label className="block mb-1 text-sm font-medium">
+                  Company Name <span className="text-destructive">*</span>
+                </label>
                 <Input
                   name="name"
                   value={newCompany.name}
                   onChange={handleNewCompanyChange}
                   placeholder="Company Name"
+                  className={formErrors.name ? "border-destructive" : ""}
                 />
+                {formErrors.name && <p className="text-xs text-destructive mt-1">{formErrors.name}</p>}
               </div>
               <div className="mb-4">
-                <label className="block mb-1 text-sm font-medium">Company Username</label>
+                <label className="block mb-1 text-sm font-medium">
+                  Company Username <span className="text-destructive">*</span>
+                </label>
                 <Input
                   name="username"
                   value={newCompany.username}
                   onChange={handleNewCompanyChange}
                   placeholder="Username"
+                  className={formErrors.username ? "border-destructive" : ""}
                 />
+                {formErrors.username && <p className="text-xs text-destructive mt-1">{formErrors.username}</p>}
               </div>
-              <label className="block mb-1 text-sm font-medium">Company Description</label>
               <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium">
+                  Company Description <span className="text-destructive">*</span>
+                </label>
                 <Textarea
                   name="description"
                   value={newCompany.description}
                   onChange={handleNewCompanyChange}
                   placeholder="Company Description"
                   rows={3}
+                  className={formErrors.description ? "border-destructive" : ""}
                 />
+                {formErrors.description && <p className="text-xs text-destructive mt-1">{formErrors.description}</p>}
               </div>
               <div className="mb-4">
-                <label className="block mb-1 text-sm font-medium">Company Logo</label>
+                <label className="block mb-1 text-sm font-medium">
+                  Company Logo <span className="text-destructive">*</span>
+                </label>
                 <Input type="file" name="image" id="image" onChange={handleNewCompanyChange} />
+                {formErrors.image && <p className="text-xs text-destructive mt-1">{formErrors.image}</p>}
               </div>
               {previewUrl && (
                 <div className="mb-4 relative w-32 h-32">
                   <Image src={previewUrl} alt="Company logo preview" fill className="object-cover rounded-md" />
-                  {/* 'X' button to clear image */}
                   <button
                     type="button"
                     onClick={handleClearImage}

@@ -1,5 +1,5 @@
 import { Character } from "./Character";
-import { User } from "firebase/auth";
+import { User } from "./User";
 export type DayType = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface Post {

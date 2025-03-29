@@ -10,19 +10,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import {
-  ArrowLeft,
-  Calendar,
-  Trash2,
-  TrendingUp,
-  BarChart,
-  PieChart,
-  LineChart,
-  Plus,
-  Loader2,
-  AlertTriangle,
-  Clock
-} from "lucide-react";
+import { ArrowLeft, Calendar, Trash2, TrendingUp, BarChart, Plus, Loader2, AlertTriangle, Clock } from "lucide-react";
 import CompanySelector from "@/components/my-game/CompanySelector";
 import ScenarioSelector from "@/components/my-game/ScenarioSelector";
 import type { Company } from "@/interfaces/Company";
@@ -377,7 +365,7 @@ export default function LoadGameScreen() {
                 <span className="flex items-center gap-2">
                   <span className="animate-pulse">Preparing</span>
                   <span className="flex">
-                    {[TrendingUp, BarChart, PieChart, LineChart].map((Icon, index) => (
+                    {[TrendingUp, BarChart].map((Icon, index) => (
                       <Icon
                         key={index}
                         className="h-4 w-4 animate-bounce"
@@ -421,7 +409,7 @@ export default function LoadGameScreen() {
               <p className="text-muted-foreground">Preparing marketing scenarios...</p>
             </div>
             <div className="flex justify-center items-center gap-2 mb-4">
-              {[TrendingUp, BarChart, PieChart, LineChart].map((Icon, index) => (
+              {[TrendingUp, BarChart].map((Icon, index) => (
                 <Icon
                   key={index}
                   className="h-5 w-5 text-primary animate-bounce"

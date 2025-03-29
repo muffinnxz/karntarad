@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGame, getGamesByUserId, deleteGame, updateGame } from "@/services/game.service";
 import { authMiddleware } from "@/middleware/authMiddleware";
 import { getUser } from "@/services/user.service";
-import { Character } from "@/interfaces/Character";
 
 /**
  * ✅ Handles GET request for fetching all games by user id
@@ -44,8 +43,7 @@ export async function POST(request: NextRequest) {
 		if (!companyId || !scenarioId) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 		}
-		const characterList: Character[] = []
-		const game = await createGame(user.id, companyId, scenarioId, characterList);
+		const game = await createGame(user.id, companyId, scenarioId);
 		return NextResponse.json(game);
 	} catch (error) {
 		return NextResponse.json({ error: error, message: "Error creating game, companyId or scenarioId is invalid" }, { status: 500 });

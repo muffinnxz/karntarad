@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUser, createUser } from "@/services/user.service";
 import { authMiddleware } from "@/middleware/authMiddleware";
 
+export const maxDuration = 300;
+
 /**
  * ✅ Handle GET request - Fetch user data
  */

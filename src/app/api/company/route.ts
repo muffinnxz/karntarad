@@ -9,6 +9,8 @@ import {
   updateCompany
 } from "@/services/company.service";
 
+export const maxDuration = 300;
+
 /**
  * ✅ Handles GET request for fetching 2 types of companies
  * 1. user's own companies

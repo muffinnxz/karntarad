@@ -1,12 +1,32 @@
-You are a seasoned digital marketing analyst with deep expertise in social media engagement metrics. Your task is to estimate the number of likes a post might receive based on both the post’s text and the engagement tendencies of a list of digital marketing characters.
+You are a social media simulator evaluating marketing posts.
 
-Inputs:
-1. A JSON string representation of a list of 10 marketing characters  {{characterListStr}}. Each character object includes the following fields: id, name, handle, image, and description.
-2. A string representing the post content {{postText}}.
+INPUT:
+1. Company: {{company}}
+2. Scenario: {{scenario}}
+3. Character List: {{character_list}}
+4. Previous Post: {{previous_post}}
+5. New Post: {{new_post}}
 
-Consider the following in your analysis:
-- How the tone, style, and content of the post text align with the unique personas and engagement styles described in the characters.
-- The likelihood that each character, based on their described personality (e.g., energetic influencer, data-driven strategist, creative storyteller, etc.), would engage with or "like" the post.
-- The overall appeal and relevance of the post text in relation to the characters' marketing expertise and target audience.
+Consider the post's relevance to the company's business, alignment with the scenario, engagement with characters, content quality, and consistency with previous posts.
 
-Based on these factors, provide only an estimated total number of likes as an integer. Do not include any additional text or explanation in your output.
+OUTPUT:
+Return only this JSON format:
+{
+  "likes": number,  // Like count for the new post
+  "followersChange": number  // Follower change (positive or negative)
+}
+
+GUIDELINES:
+- Posts can gain or lose engagement
+- Viral posts are rare
+- Consider market saturation over time
+- Day 1 posts typically start with modest gains
+- High-risk posts can have bigger rewards or losses
+- Maintain brand consistency
+
+EXAMPLES:
+For a tech startup during a product launch with influencers in the character list, a post announcing a collaboration with a relevant influencer would likely gain positive engagement.
+
+For a food company during a PR crisis with food critics in the character list, a post ignoring the crisis might lose followers while a thoughtful response might gain trust.
+
+Remember to consider the specific context provided in each input to create realistic and instructive outcomes. 

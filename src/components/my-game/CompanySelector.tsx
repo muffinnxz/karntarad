@@ -126,7 +126,8 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
         name: newCompany.name,
         description: newCompany.description,
         companyProfilePicture: base64Image,
-        isPublic: newCompany.isPublic
+        isPublic: newCompany.isPublic,
+        username: newCompany.username
       })
       .then((response) => {
         console.log("Company created successfully:", response.data);

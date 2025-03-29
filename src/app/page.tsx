@@ -1,11 +1,12 @@
 "use client";
-
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileNav } from "@/components/landing-page/mobile-nav";
 import { FeatureCardAdvanced } from "@/components/landing-page/feature-card";
+import { useAuth } from "@/contexts/AuthContext";
+import { ProfileButton } from "@/components/profile-button";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -14,6 +15,7 @@ const fadeInUp = {
 };
 
 export default function LandingPage() {
+  const { user, loading } = useAuth();
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -36,11 +38,23 @@ export default function LandingPage() {
               Contact
             </Link>
           </motion.nav>
-
-          <motion.div {...fadeInUp} className="flex items-center gap-4">
-            <Button asChild className="hidden md:inline-flex">
-              <Link href="/signup">Sign In with Google</Link>
-            </Button>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex items-center gap-4"
+          >
+            {!loading && (
+              <>
+                {user ? (
+                  <ProfileButton />
+                ) : (
+                  <Button asChild className="hidden md:inline-flex">
+                    <Link href="/signin">Sign In with Google</Link>
+                  </Button>
+                )}
+              </>
+            )}
             <MobileNav />
           </motion.div>
         </div>

@@ -176,14 +176,6 @@ export default function LoadGameScreen() {
               </div>
             )}
 
-            {/* Empty State */}
-            {!loading && !error && savedGames.length === 0 && (
-              <div className="col-span-full flex flex-col items-center justify-center py-12">
-                <p className="text-muted-foreground mb-4">You don&apos;t have any saved games yet.</p>
-                <Button onClick={() => setShowNewGameModal(true)}>Create Your First Game</Button>
-              </div>
-            )}
-
             {/* Saved Game Cards */}
             {!loading &&
               savedGames.map((game) => (

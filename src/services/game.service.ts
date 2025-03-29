@@ -6,7 +6,6 @@ import { getScenario } from "./scenario.service";
 import path from "path";
 import Together from "together-ai";
 import fs from "fs";
-import { Post } from "@/interfaces/Post";
 
 export const createGame = async (userId: string, companyId: string, scenarioId: string) => {
   const firestore = admin.firestore();
@@ -15,7 +14,9 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
   const company = await getCompany(companyId);
   const scenario = await getScenario(scenarioId);
 
-  const generateDay0File = path.join(process.cwd(), "src/prompts/generate-day0.txt");
+  console.log(company, scenario);
+
+  const generateDay0File = path.join(process.cwd(), "src/prompts/generate-day-0.txt");
   const day0Content = fs.readFileSync(generateDay0File, "utf-8");
 
   const day0Prompt = day0Content
@@ -28,8 +29,7 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
   const llmModel = "deepseek-ai/DeepSeek-V3";
   const responseLLM = await together.chat.completions.create({
     model: llmModel,
-    messages: [{ role: "system", content: day0Prompt }],
-    response_format: { type: "json_object" }
+    messages: [{ role: "system", content: day0Prompt }]
   });
   const responseContent = responseLLM.choices[0]?.message?.content;
 
@@ -45,6 +45,7 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
         characterList = JSON.parse(charactersMatch[1]);
       } catch (e) {
         console.error("Failed to parse characters:", e);
+        characterList = [];
       }
     }
 
@@ -55,14 +56,16 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
         postsList = JSON.parse(postsMatch[1]);
       } catch (e) {
         console.error("Failed to parse posts:", e);
+        postsList = [];
       }
     }
   }
 
-  const promises: Promise<Post>[] = [];
-  postsList.map((v) => {
-    const post: Post = {
-      id: Math.random().toString(36).substring(2, 15),
+  const createPost = async (v: { username: string; content: string; likes: number }) => {
+    const postRef = firestore.collection("posts").doc();
+
+    await postRef.set({
+      id: postRef.id,
       gameId: gameRef.id,
       day: 0,
       creator: {
@@ -70,20 +73,11 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
         username: v.username
       },
       text: v.content,
-      numLikes: v.likes || 0,
-      image: undefined
-    };
+      numLikes: v.likes || 0
+    });
+  };
 
-    const createPost = async (post: Post) => {
-      const postRef = firestore.collection("posts").doc();
-      await postRef.set(post);
-      return post;
-    };
-
-    promises.push(createPost(post));
-  });
-
-  await Promise.all(promises);
+  await Promise.all(postsList.map(createPost));
 
   // Create the game object
   const game: Game = {

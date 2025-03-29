@@ -5,13 +5,14 @@ import { useRef, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "../../components/ui/button"
+import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Heart, MessageCircle, Repeat2, ImageIcon, X, Send } from "lucide-react"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import {Post} from "@/interfaces/Post"
+import { Post } from "@/interfaces/Post"
+import { Game } from "@/interfaces/Game"
 
 
 // Sample data for posts
@@ -29,8 +30,6 @@ const samplePosts: Post[] = [
     text: "Just launched my new website! Check it out at example.com #webdev #launch",
     image: "/placeholder.svg?height=300&width=500",
     numLikes: 42,
-    numComments: 7,
-    numRetweets: 12,
   },
   {
     id: "2",
@@ -44,8 +43,6 @@ const samplePosts: Post[] = [
     day: 1,
     text: "Had a great meeting with @johndoe today about the upcoming project. Excited to get started!",
     numLikes: 18,
-    numComments: 3,
-    numRetweets: 2,
   },
   {
     id: "3",
@@ -61,8 +58,6 @@ const samplePosts: Post[] = [
       "Breaking: New AI model released that can generate code from natural language descriptions. #AI #coding #technology",
     image: "/placeholder.svg?height=300&width=500",
     numLikes: 128,
-    numComments: 32,
-    numRetweets: 64,
   },
   {
     id: "4",
@@ -76,8 +71,6 @@ const samplePosts: Post[] = [
     day: 2,
     text: "Just booked my trip to Japan! Any recommendations @japantravel? #travel #japan #vacation",
     numLikes: 76,
-    numComments: 24,
-    numRetweets: 8,
   },
 ]
 
@@ -112,25 +105,31 @@ const formatText = (text: string) => {
   })
 }
 
+const formatDay = (day: number) => {
+    switch(day) {
+      case 0: return "day 0 - Monday";
+      case 1: return "day 1 - Tuesday";
+      case 2: return "day 2 - Wednesday";
+      case 3: return "day 3 - Thursday";
+      case 4: return "day 4 - Friday";
+      case 5: return "day 5 - Saturday";
+      case 6: return "day 6 - Sunday";
+      default: return `day ${day} - Invalid day`;
+    }
+};
+
 // Post component
 const PostItem = ({ post }: { post: Post }) => {
     const router = useRouter();
-    
-    const handlePostClick = (e: React.MouseEvent) => {
-        if (!(e.target as HTMLElement).closest("button, .profile-link")) {
-            router.push(`/profile/${post.character.handle}/post/${post.id}`);
-        }
-    };
 
     const handleProfileClick = (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent post click event
-        router.push(`/profile/${post.character.name}`);
+        router.push(`/game/${post.gameId}/profile/${post.character.id}`);
     };
 
     return (
         <Card 
             className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors cursor-pointer" 
-            onClick={handlePostClick}
         >
             <div className="flex items-start space-x-3">
                 {/* Avatar Clickable */}
@@ -161,7 +160,7 @@ const PostItem = ({ post }: { post: Post }) => {
                         </span>
 
                         <span className="text-gray-500 mx-2">·</span>
-                        <span className="text-gray-500">{post.day}</span>
+                        <span className="text-gray-500">{formatDay(post.day)}</span>
                     </div>
 
                     <div className="mt-1 text-gray-800">{formatText(post.text)}</div>
@@ -179,14 +178,6 @@ const PostItem = ({ post }: { post: Post }) => {
                     )}
 
                     <div className="flex mt-3 text-gray-500">
-                        <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-                            <MessageCircle className="h-4 w-4" />
-                            <span>{post.numComments}</span>
-                        </Button>
-                        <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-                            <Repeat2 className="h-4 w-4" />
-                            <span>{post.numRetweets}</span>
-                        </Button>
                         <Button variant="ghost" size="sm" className="flex items-center space-x-1">
                             <Heart className="h-4 w-4" />
                             <span>{post.numLikes}</span>
@@ -280,36 +271,66 @@ return (
 };
 
 
-export default function TwitterFeed() {
-const [showModal, setShowModal] = useState<boolean>(false);
+export default function GamePage({ params: { id } }: { params: { id: string } }) {
+    const [showModal, setShowModal] = useState<boolean>(false);
+    //mock game data
+    const game: Game = {
+        id: id,
+        company: {
+            id: "1",
+            name: "Tech Corp",
+            description: "A leading tech company specializing in innovative solutions.",
+            userId: "1",
+        },
+        scenario: {
+            userId: "1",
+            id: "1",
+            name: "Tech Startup",
+            description: "You are the CEO of a tech startup in Silicon Valley.",
+        },
+        userId: "1",
+        day: 0,
+        result: "In Progress",
+    };
 
-return (
-    <div className="max-w-xl mx-auto">
-    <div className="sticky top-0 bg-white z-10 p-4 border-b">
-        <h1 className="text-xl font-bold">Home</h1>
-    </div>
-    <ScrollArea className="h-[calc(100vh-80px)]">
-      <div className="p-4 border-b bg-white">
-          <NewPostForm />
-      </div>
-      <div className="p-4">
-      {samplePosts.map((post) => (
-          <PostItem key={post.id} post={post} />
-      ))}
-      </div>
-    </ScrollArea>
+    return (
+        <div className="max-w-full">
+        <div className="sticky top-0 bg-white z-10 p-4 border-b">
+            <div className="flex flex-col">
+                <h1 className="text-xl font-bold">{`Company: ${game.company.name}`}</h1>
+                <div className="flex justify-between items-center">
+                    <div>
+                    <span className="text-gray-600">{`Scenario: ${game.scenario.name}`}</span>
+                    <span className="text-gray-500 mx-2">·</span>
+                    <span className="text-gray-500">{formatDay(game.day)}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ScrollArea className="h-[calc(100vh-80px)]">
+            <div className="max-w-xl mx-auto">
+                <div className="p-4 border-b bg-white">
+                    <NewPostForm />
+                </div>
+                <div className="p-4">
+                {samplePosts.map((post) => (
+                    <PostItem key={post.id} post={post} />
+                ))}
+                </div>
+            </div>
+        </ScrollArea>
 
-    <div className="fixed bottom-4 right-4">
-        <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogTrigger asChild>
-            <Button onClick={() => setShowModal(true)}>New Post</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-lg">
-            <NewPostForm onClose={() => setShowModal(false)} />
-        </DialogContent>
-        </Dialog>
-    </div>
-    </div>
-);
+        <div className="fixed bottom-4 right-4">
+            <Dialog open={showModal} onOpenChange={setShowModal}>
+            <DialogTrigger asChild>
+                <Button onClick={() => setShowModal(true)}>New Post</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+                <NewPostForm onClose={() => setShowModal(false)} />
+            </DialogContent>
+            </Dialog>
+        </div>
+        </div>
+    );
 }
 

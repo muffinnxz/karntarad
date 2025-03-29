@@ -40,6 +40,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
     username: ""
   });
 
+  // State for image preview URL
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   // State for companies fetched from the API
   const [myCompanies, setMyCompanies] = useState<Company[]>([]);
   const [communityCompanies, setCommunityCompanies] = useState<Company[]>([]);
@@ -62,14 +65,25 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
 
   /**
    * Update new company state when user types, selects a file, or toggles the checkbox.
+   * For file input, we generate a preview URL.
    * @param e - The input change event
    */
   const handleNewCompanyChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, type, value, checked, files } = e.target as HTMLInputElement;
-    setNewCompany((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : files ? files[0] : value
-    }));
+    if (files && files[0] && name === "image") {
+      // Create an object URL for the image preview
+      const file = files[0];
+      setPreviewUrl(URL.createObjectURL(file));
+      setNewCompany((prev) => ({
+        ...prev,
+        image: file
+      }));
+    } else {
+      setNewCompany((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value
+      }));
+    }
   };
 
   /**
@@ -133,7 +147,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
         console.log("Company created successfully:", response.data);
         onCompanySelect(response.data); // Pass the created company to the parent component
         setOpen(false); // Close the dialog
-        // Reset form
+        // Reset form and clear preview
         setNewCompany({
           name: "",
           description: "",
@@ -141,6 +155,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
           isPublic: true,
           username: ""
         });
+        setPreviewUrl(null);
       })
       .catch((error) => {
         console.error("Error creating company:", error);
@@ -177,6 +192,14 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
   const handleSelectCompany = (company: Company) => {
     onCompanySelect(company);
     setOpen(false);
+  };
+
+  /**
+   * Clear the selected image and preview
+   */
+  const handleClearImage = () => {
+    setNewCompany((prev) => ({ ...prev, image: null }));
+    setPreviewUrl(null);
   };
 
   return (
@@ -223,8 +246,8 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
         </div>
       </DialogTrigger>
 
-      {/* Dialog Content */}
-      <DialogContent className="sm:max-w-[600px]">
+      {/* Dialog Content with fixed max height & scroll */}
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Select or Create Company</DialogTitle>
           <DialogDescription>
@@ -319,6 +342,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
           <TabsContent value="new">
             <div className="p-4">
               <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium">Company Name</label>
                 <Input
                   name="name"
                   value={newCompany.name}
@@ -327,6 +351,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                 />
               </div>
               <div className="mb-4">
+                <label className="block mb-1 text-sm font-medium">Company Username</label>
                 <Input
                   name="username"
                   value={newCompany.username}
@@ -334,6 +359,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                   placeholder="Username"
                 />
               </div>
+              <label className="block mb-1 text-sm font-medium">Company Description</label>
               <div className="mb-4">
                 <Textarea
                   name="description"
@@ -344,8 +370,23 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                 />
               </div>
               <div className="mb-4">
-                <Input type="file" name="image" onChange={handleNewCompanyChange} />
+                <label className="block mb-1 text-sm font-medium">Company Logo</label>
+                <Input type="file" name="image" id="image" onChange={handleNewCompanyChange} />
               </div>
+              {previewUrl && (
+                <div className="mb-4 relative w-32 h-32">
+                  <Image src={previewUrl} alt="Company logo preview" fill className="object-cover rounded-md" />
+                  {/* 'X' button to clear image */}
+                  <button
+                    type="button"
+                    onClick={handleClearImage}
+                    className="absolute top-1 right-1 bg-muted/80 p-1 rounded-full hover:bg-muted transition-colors"
+                  >
+                    <X className="h-4 w-4 text-destructive" />
+                    <span className="sr-only">Remove image</span>
+                  </button>
+                </div>
+              )}
               <div className="mb-4 flex items-center">
                 <input
                   type="checkbox"

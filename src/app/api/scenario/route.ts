@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
 		const { name, description, isPublic } = body;
 
-		if (!name || !description || !isPublic) {
+		if (!name || !description || isPublic === undefined) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 		}
 

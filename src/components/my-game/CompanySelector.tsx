@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -17,9 +17,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 // Icons
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 // Types
 import { Company } from "@/interfaces/Company";
+import axios from "@/lib/axios";
 
 interface CompanySelectorProps {
   selectedCompany: Company | null;
@@ -34,107 +35,40 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
   const [newCompany, setNewCompany] = useState({
     name: "",
     description: "",
-    image: null as File | null
+    image: null as File | null,
+    isPublic: true,
+    username: ""
   });
 
-  // Mock data for the "My Company" tab
-  const mockMyCompanies: Company[] = [
-    {
-      id: "1",
-      userId: "user_1",
-      name: "My Company A",
-      username: "mycompanya",
-      description: "This is my first company.",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "2",
-      userId: "user_1",
-      name: "My Company B",
-      username: "mycompanyb",
-      description: "This is my second company.",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "3",
-      userId: "user_1",
-      name: "My Company C",
-      username: "mycompanyc",
-      description: "This is my third company.",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "4",
-      userId: "user_1",
-      name: "My Company D",
-      username: "mycompanyd",
-      description: "This is my fourth company.",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "5",
-      userId: "user_1",
-      name: "My Company E",
-      username: "mycompanye",
-      description: "This is my fifth company.",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "6",
-      userId: "user_1",
-      name: "My Company F",
-      username: "mycompanyf",
-      description: "This is my sixth company.",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    }
-  ];
+  // State for companies fetched from the API
+  const [myCompanies, setMyCompanies] = useState<Company[]>([]);
+  const [communityCompanies, setCommunityCompanies] = useState<Company[]>([]);
 
-  // Mock data for the "Community" tab
-  const mockCommunityCompanies: Company[] = [
-    {
-      id: "3",
-      userId: "user_2",
-      name: "Community Company X",
-      username: "communityx",
-      description: "A great community company.",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "4",
-      userId: "user_3",
-      name: "Community Company Y",
-      username: "communityy",
-      description: "Another awesome community company.",
-      companyProfileURL: "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
+  // Fetch companies when the dialog opens
+  useEffect(() => {
+    if (open) {
+      axios
+        .get("/company")
+        .then((res) => {
+          // Expecting the API to return an object with userCompanies and communityCompanies
+          setMyCompanies(res.data.userCompanies);
+          setCommunityCompanies(res.data.communityCompanies);
+        })
+        .catch((error) => {
+          console.error("Error fetching companies:", error);
+        });
     }
-  ];
+  }, [open]);
 
   /**
-   * Update new company state when user types or selects a file.
+   * Update new company state when user types, selects a file, or toggles the checkbox.
    * @param e - The input change event
    */
   const handleNewCompanyChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    const files = (e.target as HTMLInputElement).files;
+    const { name, type, value, checked, files } = e.target as HTMLInputElement;
     setNewCompany((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value
+      [name]: type === "checkbox" ? checked : files ? files[0] : value
     }));
   };
 
@@ -187,31 +121,57 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       }
     }
 
-    // In a real app, generate a unique ID and retrieve the actual user ID.
-    const createdCompany: Company = {
-      id: `new_${Date.now()}`, // More unique ID
-      userId: "current_user_id",
-      name: newCompany.name,
-      username: newCompany.name.toLowerCase().replace(/\s+/g, ''), // Generate username from name
-      description: newCompany.description,
-      companyProfileURL: base64Image || "/placeholder/company-profile.svg",
-      isPublic: true,
-      createdAt: new Date()
-    };
-
-    onCompanySelect(createdCompany);
-    setOpen(false);
-
-    // Reset form
-    setNewCompany({
-      name: "",
-      description: "",
-      image: null
-    });
+    axios
+      .post("/company", {
+        name: newCompany.name,
+        description: newCompany.description,
+        companyProfilePicture: base64Image,
+        isPublic: newCompany.isPublic
+      })
+      .then((response) => {
+        console.log("Company created successfully:", response.data);
+        onCompanySelect(response.data); // Pass the created company to the parent component
+        setOpen(false); // Close the dialog
+        // Reset form
+        setNewCompany({
+          name: "",
+          description: "",
+          image: null,
+          isPublic: true,
+          username: ""
+        });
+      })
+      .catch((error) => {
+        console.error("Error creating company:", error);
+      });
   };
 
   /**
-   * Select a company from mock data and close the dialog.
+   * Delete a company using the API
+   * @param companyId - The ID of the company to delete
+   */
+  const handleDeleteCompany = (companyId: string) => {
+    axios
+      .delete("/company", {
+        data: { id: companyId }
+      })
+      .then(() => {
+        console.log("Company deleted successfully");
+        // Remove the company from the list
+        setMyCompanies((prevCompanies) => prevCompanies.filter((company) => company.id !== companyId));
+
+        // If the deleted company was selected, clear the selection
+        if (selectedCompany?.id === companyId) {
+          onCompanySelect(null);
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting company:", error);
+      });
+  };
+
+  /**
+   * Select a company from the fetched data and close the dialog.
    */
   const handleSelectCompany = (company: Company) => {
     onCompanySelect(company);
@@ -279,19 +239,24 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
 
           {/* My Company Tab */}
           <TabsContent value="my-company" className="mt-4 grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
-            {mockMyCompanies.map((company) => (
+            {myCompanies.map((company) => (
               <Card
                 key={company.id}
-                onClick={() => handleSelectCompany(company)}
-                className={`cursor-pointer transition-colors hover:border-primary ${
+                className={`relative cursor-pointer transition-colors hover:border-primary ${
                   selectedCompany?.id === company.id ? "border-primary" : ""
                 }`}
               >
-                <CardHeader>
+                <CardHeader onClick={() => handleSelectCompany(company)}>
                   <div className="flex items-start gap-4">
                     {company.companyProfileURL && (
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image src={company.companyProfileURL} alt={company.name} width={64} height={64} className="object-cover" />
+                        <Image
+                          src={company.companyProfileURL}
+                          alt={company.name}
+                          width={64}
+                          height={64}
+                          className="object-cover"
+                        />
                       </div>
                     )}
                     <div className="flex-1">
@@ -300,13 +265,25 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                     </div>
                   </div>
                 </CardHeader>
+                <button
+                  className="absolute bottom-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`Are you sure you want to delete "${company.name}"?`)) {
+                      handleDeleteCompany(company.id);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete company</span>
+                </button>
               </Card>
             ))}
           </TabsContent>
 
           {/* Community Tab */}
           <TabsContent value="community" className="mt-4 grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
-            {mockCommunityCompanies.map((company) => (
+            {communityCompanies.map((company) => (
               <Card
                 key={company.id}
                 onClick={() => handleSelectCompany(company)}
@@ -318,7 +295,13 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                   <div className="flex items-start gap-4">
                     {company.companyProfileURL && (
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image src={company.companyProfileURL} alt={company.name} width={64} height={64} className="object-cover" />
+                        <Image
+                          src={company.companyProfileURL}
+                          alt={company.name}
+                          width={64}
+                          height={64}
+                          className="object-cover"
+                        />
                       </div>
                     )}
                     <div className="flex-1">
@@ -343,6 +326,14 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                 />
               </div>
               <div className="mb-4">
+                <Input
+                  name="username"
+                  value={newCompany.username}
+                  onChange={handleNewCompanyChange}
+                  placeholder="Username"
+                />
+              </div>
+              <div className="mb-4">
                 <Textarea
                   name="description"
                   value={newCompany.description}
@@ -353,6 +344,18 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
               </div>
               <div className="mb-4">
                 <Input type="file" name="image" onChange={handleNewCompanyChange} />
+              </div>
+              <div className="mb-4 flex items-center">
+                <input
+                  type="checkbox"
+                  name="isPublic"
+                  id="isPublic"
+                  checked={newCompany.isPublic}
+                  onChange={handleNewCompanyChange}
+                />
+                <label htmlFor="isPublic" className="ml-2">
+                  Make company public
+                </label>
               </div>
               <Button onClick={handleCreateNewCompany}>Create Company</Button>
             </div>

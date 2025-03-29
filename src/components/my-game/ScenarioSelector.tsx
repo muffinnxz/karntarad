@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "@/lib/axios";
 // UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 // Icons
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 // Types
 import { Scenario } from "@/interfaces/Scenario";
 
@@ -31,86 +32,44 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
   // State for new scenario creation
   const [newScenario, setNewScenario] = useState({
     name: "",
-    description: ""
+    description: "",
+    isPublic: true
   });
 
-  // Define mock data for "My Scenarios" and "Community" tabs
-  const mockMyScenarios: Scenario[] = [
-    {
-      id: "1",
-      userId: "user_1",
-      name: "Existing Scenario 1",
-      description: "Description for scenario 1",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "2",
-      userId: "user_1",
-      name: "Existing Scenario 2",
-      description: "Description for scenario 2",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "4",
-      userId: "user_1",
-      name: "Existing Scenario 3",
-      description: "Description for scenario 3",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "5",
-      userId: "user_1",
-      name: "Existing Scenario 4",
-      description: "Description for scenario 4",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "6",
-      userId: "user_1",
-      name: "Existing Scenario 5",
-      description: "Description for scenario 5",
-      isPublic: true,
-      createdAt: new Date()
-    },
-    {
-      id: "7",
-      userId: "user_1",
-      name: "Existing Scenario 6",
-      description: "Description for scenario 6",
-      isPublic: true,
-      createdAt: new Date()
+  // State for scenarios fetched from the API
+  const [userScenarios, setUserScenarios] = useState<Scenario[]>([]);
+  const [communityScenarios, setCommunityScenarios] = useState<Scenario[]>([]);
+  
+  // Fetch scenarios when the dialog opens
+  useEffect(() => {
+    if (open) {
+      axios
+        .get("/scenario")
+        .then((res) => {
+          // API returns userScenarios and communityScenarios
+          setUserScenarios(res.data.userScenarios);
+          setCommunityScenarios(res.data.communityScenarios);
+        })
+        .catch((error) => {
+          console.error("Error fetching scenarios:", error);
+        });
     }
-  ];
-
-  const mockCommunityScenarios: Scenario[] = [
-    {
-      id: "3",
-      userId: "user_2",
-      name: "Community Scenario",
-      description: "Description for community scenario",
-      isPublic: true,
-      createdAt: new Date()
-    }
-  ];
+  }, [open]);
 
   /**
    * Update new scenario state on input change.
    * @param e - The input change event
    */
   const handleNewScenarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, type, value, checked } = e.target;
     setNewScenario((prev) => ({
       ...prev,
-      [name]: value
+      [name]: type === "checkbox" ? checked : value
     }));
   };
 
   /**
-   * Create new scenario and pass it to parent.
+   * Create new scenario via API and pass it to parent.
    * Closes the dialog after successful creation.
    */
   const handleCreateNewScenario = () => {
@@ -120,28 +79,56 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
       return;
     }
     
-    // Create new scenario with unique ID
-    const createdScenario: Scenario = {
-      id: `new_${Date.now()}`,
-      userId: "current_user_id",
-      name: newScenario.name,
-      description: newScenario.description,
-      isPublic: true,
-      createdAt: new Date()
-    };
-    
-    onScenarioSelect(createdScenario);
-    setOpen(false); // Close the dialog after creating a new scenario
-    
-    // Reset form
-    setNewScenario({
-      name: "",
-      description: ""
-    });
+    // Ensure isPublic is explicitly a boolean value
+    axios
+      .post("/scenario", {
+        name: newScenario.name,
+        description: newScenario.description,
+        isPublic: Boolean(newScenario.isPublic)
+      })
+      .then((response) => {
+        console.log("Scenario created successfully:", response.data);
+        onScenarioSelect(response.data); // Pass the created scenario to the parent component
+        setOpen(false); // Close the dialog
+        
+        // Reset form
+        setNewScenario({
+          name: "",
+          description: "",
+          isPublic: true
+        });
+      })
+      .catch((error) => {
+        console.error("Error creating scenario:", error);
+      });
   };
 
   /**
-   * Handle scenario selection from mock data.
+   * Delete a scenario using the API
+   * @param scenarioId - The ID of the scenario to delete
+   */
+  const handleDeleteScenario = (scenarioId: string) => {
+    axios
+      .delete("/scenario", {
+        data: { id: scenarioId }
+      })
+      .then(() => {
+        console.log("Scenario deleted successfully");
+        // Remove the scenario from the list
+        setUserScenarios((prevScenarios) => prevScenarios.filter((scenario) => scenario.id !== scenarioId));
+        
+        // If the deleted scenario was selected, clear the selection
+        if (selectedScenario?.id === scenarioId) {
+          onScenarioSelect(null);
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting scenario:", error);
+      });
+  };
+
+  /**
+   * Handle scenario selection.
    * @param scenario - The selected scenario
    */
   const handleSelectScenario = (scenario: Scenario) => {
@@ -191,23 +178,34 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
             <TabsTrigger value="new">New</TabsTrigger>
           </TabsList>
           <TabsContent value="my-scenarios" className="mt-4 grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
-            {mockMyScenarios.map((scenario) => (
+            {userScenarios.map((scenario) => (
               <Card
                 key={scenario.id}
-                onClick={() => handleSelectScenario(scenario)}
-                className={`cursor-pointer transition-colors hover:border-primary ${
+                className={`relative cursor-pointer transition-colors hover:border-primary ${
                   selectedScenario?.id === scenario.id ? "border-primary" : ""
                 }`}
               >
-                <CardHeader>
+                <CardHeader onClick={() => handleSelectScenario(scenario)}>
                   <CardTitle>{scenario.name}</CardTitle>
                   <CardDescription className="mt-2">{scenario.description}</CardDescription>
                 </CardHeader>
+                <button
+                  className="absolute bottom-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`Are you sure you want to delete "${scenario.name}"?`)) {
+                      handleDeleteScenario(scenario.id);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete scenario</span>
+                </button>
               </Card>
             ))}
           </TabsContent>
           <TabsContent value="community" className="mt-4 grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
-            {mockCommunityScenarios.map((scenario) => (
+            {communityScenarios.map((scenario) => (
               <Card
                 key={scenario.id}
                 onClick={() => handleSelectScenario(scenario)}
@@ -239,6 +237,18 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                   onChange={handleNewScenarioChange}
                   placeholder="Scenario Description"
                 />
+              </div>
+              <div className="mb-4 flex items-center">
+                <input
+                  type="checkbox"
+                  name="isPublic"
+                  id="isPublic"
+                  checked={newScenario.isPublic}
+                  onChange={handleNewScenarioChange}
+                />
+                <label htmlFor="isPublic" className="ml-2">
+                  Make scenario public
+                </label>
               </div>
               <Button onClick={handleCreateNewScenario}>Create Scenario</Button>
             </div>

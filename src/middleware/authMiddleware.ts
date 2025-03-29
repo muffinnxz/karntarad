@@ -16,6 +16,7 @@ export async function authMiddleware(req: NextRequest): Promise<{ user: admin.au
 	}
 
 	const token = authorization.split("Bearer ")[1];        // to be commented.
+	console.log("token from authMiddleware is", token);     // to be commented
 
 	try {
 		const decodedToken = await admin.auth().verifyIdToken(token);

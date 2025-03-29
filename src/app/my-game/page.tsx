@@ -264,7 +264,9 @@ export default function LoadGameScreen() {
                         )}
                         <div className="min-w-0">
                           <h3 className="line-clamp-1 text-lg font-medium">{game.company.name}</h3>
-                          <p className="text-xs text-muted-foreground truncate">@{game.company.username || "company"}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            @{game.company.username || "company"}
+                          </p>
                         </div>
                       </div>
                       <Button

@@ -40,10 +40,9 @@ export const deleteScenario = async (scenarioId: string) => {
 	return scenarioSnapshot.data();
 };
 
-export const updateScenario = async (scenarioId: string, userId: string, name: string, description: string) => {
+export const updateScenario = async (scenarioId: string, name: string, description: string) => {
 	const fs = admin.firestore();
 	const scenario = {
-		userId: userId,
 		name: name,
 		description: description
 	}

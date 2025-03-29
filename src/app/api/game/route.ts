@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createGame, getGamesByUserId, deleteGame, updateGame } from "@/services/game.service";
 import { authMiddleware } from "@/middleware/authMiddleware";
 import { getUser } from "@/services/user.service";
+import { Character } from "@/interfaces/Character";
 
 /**
  * ✅ Handles GET request for fetching all games by user id
@@ -43,7 +44,8 @@ export async function POST(request: NextRequest) {
 		if (!companyId || !scenarioId) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 		}
-		const game = await createGame(user.id, companyId, scenarioId);
+		const characterList: Character[] = []
+		const game = await createGame(user.id, companyId, scenarioId, characterList);
 		return NextResponse.json(game);
 	} catch (error) {
 		return NextResponse.json({ error: error, message: "Error creating game, companyId or scenarioId is invalid" }, { status: 500 });
@@ -93,11 +95,11 @@ export async function PUT(request: NextRequest) {
 			return NextResponse.json({ error: "User not found" }, { status: 401 });
 		}
 		const body = await request.json();
-		const { gameId, companyId, scenarioId, day, result } = body;
-		if (!gameId || !companyId || !scenarioId || !day || !result) {
+		const { gameId, day, result } = body;
+		if (!gameId || !day || !result) {
 			return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 		}
-		const game = await updateGame(gameId, user.id, companyId, scenarioId, day, result);
+		const game = await updateGame(gameId, day, result);
 		return NextResponse.json(game);
 	} catch (error) {
 		return NextResponse.json({ error: error, message: "Error updating game" }, { status: 500 });

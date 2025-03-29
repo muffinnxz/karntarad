@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# note files
+What_you_have_learn_from_this_project_specific_case/

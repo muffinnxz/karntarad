@@ -50,6 +50,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
   // State for form errors
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  // State for loading
+  const [isLoading, setIsLoading] = useState(false);
+
   // Fetch companies when the dialog opens
   useEffect(() => {
     if (open) {
@@ -145,6 +148,8 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       return;
     }
 
+    setIsLoading(true);
+
     let base64Image: string | undefined;
     if (newCompany.image) {
       try {
@@ -176,9 +181,11 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
         });
         setPreviewUrl(null);
         setFormErrors({});
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error creating company:", error);
+        setIsLoading(false);
       });
   };
 
@@ -428,7 +435,9 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                   Make company public
                 </label>
               </div>
-              <Button onClick={handleCreateNewCompany}>Create Company</Button>
+              <Button onClick={handleCreateNewCompany} disabled={isLoading}>
+                {isLoading ? "Creating..." : "Create Company"}
+              </Button>
             </div>
           </TabsContent>
         </Tabs>

@@ -39,6 +39,9 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
   // State for form errors
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  // State for loading
+  const [isLoading, setIsLoading] = useState(false);
+
   // State for scenarios fetched from the API
   const [userScenarios, setUserScenarios] = useState<Scenario[]>([]);
   const [communityScenarios, setCommunityScenarios] = useState<Scenario[]>([]);
@@ -91,6 +94,8 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
       return;
     }
 
+    setIsLoading(true);
+
     axios
       .post("/scenario", {
         name: newScenario.name,
@@ -109,9 +114,11 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
           isPublic: true
         });
         setFormErrors({});
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Error creating scenario:", error);
+        setIsLoading(false);
       });
   };
 
@@ -290,7 +297,9 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
               </div>
 
               {/* Create Button */}
-              <Button onClick={handleCreateNewScenario}>Create Scenario</Button>
+              <Button onClick={handleCreateNewScenario} disabled={isLoading}>
+                {isLoading ? "Creating..." : "Create Scenario"}
+              </Button>
             </div>
           </TabsContent>
         </Tabs>

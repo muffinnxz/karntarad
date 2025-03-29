@@ -13,9 +13,9 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { MobileNav } from "@/components/ui/landing-page/mobile-nav";
-import { FeatureCardAdvanced } from "@/components/ui/landing-page/feature-card";
-import { AnimatedSection } from "@/components/ui/landing-page/animated-section";
+import { MobileNav } from "@/components/landing-page/mobile-nav";
+import { FeatureCardAdvanced } from "@/components/landing-page/feature-card";
+import { AnimatedSection } from "@/components/landing-page/animated-section";
 
 export default function LandingPage() {
     // Use refs instead of state for better performance

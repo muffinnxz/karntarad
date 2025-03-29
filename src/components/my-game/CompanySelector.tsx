@@ -157,7 +157,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
         console.log("Company deleted successfully");
         // Remove the company from the list
         setMyCompanies((prevCompanies) => prevCompanies.filter((company) => company.id !== companyId));
-        
+
         // If the deleted company was selected, clear the selection
         if (selectedCompany?.id === companyId) {
           onCompanySelect(null);

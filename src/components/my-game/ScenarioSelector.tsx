@@ -286,7 +286,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                           <h3 className="font-medium text-lg truncate max-w-[75%]">{scenario.name}</h3>
                           <Badge variant="outline">{scenario.isPublic ? "Public" : "Private"}</Badge>
                         </div>
-                        <p className="text-sm mt-2 line-clamp-5 pr-10">{scenario.description}</p>
+                        <p className="text-sm mt-2 line-clamp-none pr-10">{scenario.description}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -335,7 +335,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
                             <h3 className="font-medium text-lg truncate max-w-[75%]">{scenario.name}</h3>
                             <Badge variant="outline">Public</Badge>
                           </div>
-                          <p className="text-sm mt-2 line-clamp-5 pr-10">{scenario.description}</p>
+                          <p className="text-sm mt-2 line-clamp-none pr-10">{scenario.description}</p>
                         </div>
                       </div>
                     </CardContent>

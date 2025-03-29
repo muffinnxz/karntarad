@@ -22,7 +22,6 @@ const formatText = (id: string, text: string) => {
   const words = text.split(" ");
 
   return words.map((word, index) => {
-
     if (word.startsWith("@")) {
       // Handle mentions
       return (
@@ -33,15 +32,13 @@ const formatText = (id: string, text: string) => {
         </span>
       );
     } else if (word.startsWith("#")) {
-        // Handle hashtags
-        return (
-          <span key={index}>
-            <div className="text-blue-500">
-              {word}
-            </div>{" "}
-          </span>
-        );
-      } else {
+      // Handle hashtags
+      return (
+        <span key={index}>
+          <div className="text-blue-500">{word}</div>{" "}
+        </span>
+      );
+    } else {
       // Regular text
       return <span key={index}>{word} </span>;
     }
@@ -142,106 +139,101 @@ interface NewPostFormProps {
 }
 
 const NewPostForm = ({ onClose, gameId, day }: NewPostFormProps) => {
-    const [text, setText] = useState<string>("");
-    const [image, setImage] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
-  
-    const handleSubmit = async () => {
-      if (!text.trim() && !image) {
-        console.error("Post cannot be empty.");
-        return;
-      }
-  
-      setLoading(true);
-  
-      try {
-        const response = await axios.post("/post", {
-          gameId,
-          day,
-          text,
-          image,
-        });
-  
-        console.log("Post submitted successfully:", response.data);
-  
-        // Clear input fields
-        setText("");
-        setImage(null);
-        if (onClose) onClose();
-        window.location.href = `/game/${gameId}`;
-      } catch (error) {
-        console.error("Error submitting post:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    const handleImageUpload = () => {
-      fileInputRef.current?.click(); // Open file picker
-    };
-  
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImage(reader.result as string); // Set base64 image preview
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-  
-    return (
-      <>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">New Post</h2>
-        </div>
-  
-        <Textarea
-          placeholder="What's happening?"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          className="min-h-[100px] mb-4"
-          disabled={loading}
-        />
-  
-        {image && (
-          <div className="relative mb-4">
-            <Image src={image} alt="Uploaded image" width={256} height={256} className="rounded-lg" />
-            <Button
-              variant="destructive"
-              size="sm"
-              className="absolute top-2 left-2 rounded-full p-1 h-8 w-8"
-              onClick={() => setImage(null)}
-              disabled={loading}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-  
-        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-  
-        <div className="flex justify-between items-center">
-          <Button variant="ghost" size="sm" onClick={handleImageUpload} disabled={!!image || loading}>
-            <ImageIcon className="h-4 w-4 mr-2" />
-            Add Image
-          </Button>
-  
-          <Button onClick={handleSubmit} disabled={!text.trim() || loading}>
-            {loading ? (
-              <Loader className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <Send className="h-4 w-4 mr-2" />
-            )}
-            {loading ? "Posting..." : "Post"}
-          </Button>
-        </div>
-      </>
-    );
+  const [text, setText] = useState<string>("");
+  const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleSubmit = async () => {
+    if (!text.trim() && !image) {
+      console.error("Post cannot be empty.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post("/post", {
+        gameId,
+        day,
+        text,
+        image
+      });
+
+      console.log("Post submitted successfully:", response.data);
+
+      // Clear input fields
+      setText("");
+      setImage(null);
+      if (onClose) onClose();
+      window.location.href = `/game/${gameId}`;
+    } catch (error) {
+      console.error("Error submitting post:", error);
+    } finally {
+      setLoading(false);
+    }
   };
-  
+
+  const handleImageUpload = () => {
+    fileInputRef.current?.click(); // Open file picker
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string); // Set base64 image preview
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">New Post</h2>
+      </div>
+
+      <Textarea
+        placeholder="What's happening?"
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="min-h-[100px] mb-4"
+        disabled={loading}
+      />
+
+      {image && (
+        <div className="relative mb-4">
+          <Image src={image} alt="Uploaded image" width={256} height={256} className="rounded-lg" />
+          <Button
+            variant="destructive"
+            size="sm"
+            className="absolute top-2 left-2 rounded-full p-1 h-8 w-8"
+            onClick={() => setImage(null)}
+            disabled={loading}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+
+      <div className="flex justify-between items-center">
+        <Button variant="ghost" size="sm" onClick={handleImageUpload} disabled={!!image || loading}>
+          <ImageIcon className="h-4 w-4 mr-2" />
+          Add Image
+        </Button>
+
+        <Button onClick={handleSubmit} disabled={!text.trim() || loading}>
+          {loading ? <Loader className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+          {loading ? "Posting..." : "Post"}
+        </Button>
+      </div>
+    </>
+  );
+};
 
 export default function GamePage({ params: { id } }: { params: { id: string } }) {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -259,33 +251,33 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
   // State for the visible day in the carousel
   const [visibleDay, setVisibleDay] = useState<number>(0);
 
-
-    console.log("Filtered Posts:", filteredPosts);
+  console.log("Filtered Posts:", filteredPosts);
 
   const getLastestDay = (posts: Post[]) => {
-    if(dayFilter !== null) {
-        return dayFilter;
+    console.log("Posts:", posts);
+    if (dayFilter !== null) {
+      return dayFilter;
     }
     return (game?.day ?? 0) - 1;
   };
-  
+
   const lastestDay = getLastestDay(filteredPosts);
-  
+
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     const isACompanyPost = game?.company.username === a.creator.username;
     const isBCompanyPost = game?.company.username === b.creator.username;
-  
+
     // Prioritize company posts
     if (isACompanyPost && !isBCompanyPost) return -1;
     if (!isACompanyPost && isBCompanyPost) return 1;
-  
+
     // Prioritize posts with the most frequent day
     if (a.day === lastestDay && b.day !== lastestDay) return -1;
     if (b.day === lastestDay && a.day !== lastestDay) return 1;
-  
+
     return 0; // Keep default order otherwise
   });
-    console.log("Sorted Posts:", sortedPosts);
+  console.log("Sorted Posts:", sortedPosts);
 
   const navigate = (direction: "prev" | "next") => {
     if (direction === "prev") {
@@ -334,7 +326,7 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       </div>
     );
   }
-  
+
   if (error) return <p>Error: {error}</p>;
 
   return (
@@ -356,20 +348,20 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
           </div>
         </div>
         <div className="ml-auto flex items-center space-x-2 bg-gray-100 px-3 py-1 rounded-full shadow-sm">
-            <User className="h-5 w-5" />
-            <span className="text-gray-700 font-medium">{game?.followerCount?.toLocaleString() ?? 0}</span>
+          <User className="h-5 w-5" />
+          <span className="text-gray-700 font-medium">{game?.followerCount?.toLocaleString() ?? 0}</span>
         </div>
       </div>
       <ScrollArea className="h-[calc(100vh-80px)]">
         <div className="max-w-xl mx-auto">
-            <div className="p-4 border-b bg-white">
-                <NewPostForm gameId={id} day={game?.day ?? 0} />
-            </div>
-            <div className="p-4">
-                {sortedPosts.map((post) => (
-                <PostItem key={post.id} post={post} />
-                ))}
-            </div>
+          <div className="p-4 border-b bg-white">
+            <NewPostForm gameId={id} day={game?.day ?? 0} />
+          </div>
+          <div className="p-4">
+            {sortedPosts.map((post) => (
+              <PostItem key={post.id} post={post} />
+            ))}
+          </div>
         </div>
       </ScrollArea>
 

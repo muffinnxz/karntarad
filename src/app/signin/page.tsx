@@ -30,7 +30,7 @@ export default function KarntaradModernLoginPage() {
           console.error("Error fetching user:", err);
         }
       }
-      router.push("/"); // Redirect to home page after successful login
+      router.push("/my-game");
     } catch (error) {
       console.error("Google sign-in failed:", error);
     } finally {

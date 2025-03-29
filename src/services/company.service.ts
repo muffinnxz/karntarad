@@ -7,7 +7,8 @@ export const createCompany = async (
   name: string,
   description: string,
   companyProfilePicture?: string,
-  isPublic?: boolean
+  isPublic?: boolean,
+  username?: string
 ) => {
   const fs = admin.firestore();
   const companyRef = fs.collection("companies").doc();
@@ -22,7 +23,8 @@ export const createCompany = async (
     description: description,
     companyProfileURL: companyProfileURL,
     createdAt: new Date(),
-    isPublic: isPublic || false
+    isPublic: isPublic || false,
+    username: username || ""
   };
 
   await companyRef.set(company);
@@ -62,7 +64,8 @@ export const updateCompany = async (
   companyId: string,
   name: string,
   description: string,
-  companyProfilePicture: string
+  companyProfilePicture: string,
+  username: string
 ) => {
   const fs = admin.firestore();
 
@@ -71,6 +74,7 @@ export const updateCompany = async (
 
   const company = {
     name: name,
+    username: username,
     description: description,
     companyProfileURL: companyProfileURL,
     isPublic: true,

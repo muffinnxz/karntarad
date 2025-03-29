@@ -276,6 +276,7 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
     company: {
       id: "1",
       name: "Tech Corp",
+      username: "techcorp",
       description: "A leading tech company specializing in innovative solutions.",
       userId: "1",
       companyProfileURL: "/placeholder.svg",
@@ -300,9 +301,9 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
     <div className="max-w-full">
       <div className="flex items-center sticky top-0 bg-white z-10 p-4 border-b">
         <Link href={`/my-game`} className="mr-4">
-            <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-            </Button>
+          <Button variant="ghost" size="icon">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
         </Link>
         <div className="flex flex-col">
           <h1 className="text-xl font-bold">{`Company: ${game.company.name}`}</h1>

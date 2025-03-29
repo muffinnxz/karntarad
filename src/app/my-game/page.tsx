@@ -1,19 +1,35 @@
 "use client";
 
 import React, { useState } from "react";
+// Next.js components
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Calendar, Trash2, X } from "lucide-react";
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-
-// Import your shadCN UI-based selectors
+// Icons
+import { ArrowLeft, Calendar, Trash2, X } from "lucide-react";
+// Custom components
 import CompanySelector from "@/components/my-game/CompanySelector";
 import ScenarioSelector from "@/components/my-game/ScenarioSelector";
+// Types
+import { Company } from "@/interfaces/Company";
+import { Scenario } from "@/interfaces/Scenario";
+
+// Define interface for saved games
+interface SavedGame {
+  id: string;
+  company: string;
+  description: string;
+  role: string;
+  scenario: string;
+  day: string;
+  logoUrl: string;
+}
 
 // Sample data with added logoUrl
-const savedGames = [
+const savedGames: SavedGame[] = [
   {
     id: "1",
     company: "Acme Marketing",
@@ -53,36 +69,62 @@ const savedGames = [
 ];
 
 export default function LoadGameScreen() {
+  // UI state
   const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
   const [showNewGameModal, setShowNewGameModal] = useState(false);
 
-  // State for the new game’s company and scenario selections.
-  const [selectedCompany, setSelectedCompany] = useState<any>(null);
-  const [selectedScenario, setSelectedScenario] = useState<any>(null);
+  // State for the new game's company and scenario selections
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<Scenario | null>(null);
 
-  // Handle loading a game
+  /**
+   * Handle loading a game
+   * @param id - The ID of the game to load
+   */
   const handleLoadGame = (id: string) => {
     console.log(`Loading game: ${id}`);
     // Implement your load logic here.
   };
 
-  // Show confirmation before deleting a game
+  /**
+   * Show confirmation before deleting a game
+   * @param id - The ID of the game to delete
+   * @param e - The mouse event
+   */
   const handleDeleteGame = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setDeleteConfirmation(id);
   };
 
+  /**
+   * Confirm and execute game deletion
+   * @param id - The ID of the game to delete
+   */
   const confirmDelete = (id: string) => {
     console.log(`Deleting game: ${id}`);
     // Implement your deletion logic here.
     setDeleteConfirmation(null);
   };
 
+  /**
+   * Create a new game with the selected company and scenario
+   */
   const handleCreateNewGame = () => {
-    console.log("Creating new game with:", { selectedCompany, selectedScenario });
+    // Validate required selections
+    if (!selectedCompany || !selectedScenario) {
+      console.error("Company and scenario are required");
+      return;
+    }
+    
+    console.log("Creating new game with:", { 
+      company: selectedCompany.name,
+      scenario: selectedScenario.name
+    });
+    
     // Implement your game creation logic here.
     setShowNewGameModal(false);
-    // Reset selections.
+    
+    // Reset selections
     setSelectedCompany(null);
     setSelectedScenario(null);
   };

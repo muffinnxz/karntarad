@@ -1,13 +1,22 @@
 "use client";
 
 import { useState } from "react";
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+// Icons
 import { X } from "lucide-react";
-
+// Types
 import { Scenario } from "@/interfaces/Scenario";
 
 interface ScenarioSelectorProps {
@@ -18,12 +27,66 @@ interface ScenarioSelectorProps {
 export default function ScenarioSelector({ selectedScenario, onScenarioSelect }: ScenarioSelectorProps) {
   // State for dialog open/close
   const [open, setOpen] = useState(false);
-  
+
+  // State for new scenario creation
   const [newScenario, setNewScenario] = useState({
-    scenarioName: "",
-    scenarioDescription: ""
+    name: "",
+    description: ""
   });
 
+  // Define mock data for "My Scenarios" and "Community" tabs
+  const mockMyScenarios: Scenario[] = [
+    {
+      id: "1",
+      userId: "user_1",
+      name: "Existing Scenario 1",
+      description: "Description for scenario 1"
+    },
+    {
+      id: "2",
+      userId: "user_1",
+      name: "Existing Scenario 2",
+      description: "Description for scenario 2"
+    },
+    {
+      id: "4",
+      userId: "user_1",
+      name: "Existing Scenario 3",
+      description: "Description for scenario 3"
+    },
+    {
+      id: "5",
+      userId: "user_1",
+      name: "Existing Scenario 4",
+      description: "Description for scenario 4"
+    },
+    {
+      id: "6",
+      userId: "user_1",
+      name: "Existing Scenario 5",
+      description: "Description for scenario 5"
+    },
+    {
+      id: "7",
+      userId: "user_1",
+      name: "Existing Scenario 6",
+      description: "Description for scenario 6"
+    }
+  ];
+
+  const mockCommunityScenarios: Scenario[] = [
+    {
+      id: "3",
+      userId: "user_2",
+      name: "Community Scenario",
+      description: "Description for community scenario"
+    }
+  ];
+
+  /**
+   * Update new scenario state on input change.
+   * @param e - The input change event
+   */
   const handleNewScenarioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewScenario((prev) => ({
@@ -32,19 +95,39 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
     }));
   };
 
+  /**
+   * Create new scenario and pass it to parent.
+   * Closes the dialog after successful creation.
+   */
   const handleCreateNewScenario = () => {
-    // Replace this with your own creation logic.
+    // Validate required fields
+    if (!newScenario.name || !newScenario.description) {
+      console.error("Scenario name and description are required");
+      return;
+    }
+    
+    // Create new scenario with unique ID
     const createdScenario: Scenario = {
-      id: "new_scenario",
-      userId: "current_user_id", // Add userId property
-      name: newScenario.scenarioName,
-      description: newScenario.scenarioDescription
+      id: `new_${Date.now()}`,
+      userId: "current_user_id",
+      name: newScenario.name,
+      description: newScenario.description
     };
+    
     onScenarioSelect(createdScenario);
     setOpen(false); // Close the dialog after creating a new scenario
+    
+    // Reset form
+    setNewScenario({
+      name: "",
+      description: ""
+    });
   };
-  
-  // Function to handle scenario selection and close dialog
+
+  /**
+   * Handle scenario selection from mock data.
+   * @param scenario - The selected scenario
+   */
   const handleSelectScenario = (scenario: Scenario) => {
     onScenarioSelect(scenario);
     setOpen(false);
@@ -53,15 +136,17 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="cursor-pointer border p-3 rounded hover:border-primary transition-colors relative">
+        <div className="relative cursor-pointer rounded border p-3 transition-colors hover:border-primary">
           {selectedScenario ? (
             <>
               <div>
                 <div className="font-medium">{selectedScenario.name}</div>
-                <div className="text-xs text-muted-foreground truncate max-w-[200px]">{selectedScenario.description}</div>
+                <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                  {selectedScenario.description}
+                </div>
               </div>
-              <button 
-                className="absolute top-2 right-2 h-6 w-6 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center"
+              <button
+                className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-muted/80 hover:bg-muted"
                 onClick={(e) => {
                   e.stopPropagation();
                   onScenarioSelect(null);
@@ -79,6 +164,9 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Select or Create Scenario</DialogTitle>
+          <DialogDescription>
+            Choose one of your scenarios, select a community scenario, or create a new one.
+          </DialogDescription>
         </DialogHeader>
         <Tabs defaultValue="my-scenarios">
           <TabsList className="grid w-full grid-cols-3">
@@ -86,74 +174,56 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
             <TabsTrigger value="community">Community</TabsTrigger>
             <TabsTrigger value="new">New</TabsTrigger>
           </TabsList>
-          <TabsContent value="my-scenarios" className="grid grid-cols-1 gap-4 mt-4">
-            {/* Render list of user's scenarios */}
-            <Card 
-              onClick={() =>
-                handleSelectScenario({
-                  id: "1",
-                  userId: "user_1", // Add userId property
-                  name: "Existing Scenario 1",
-                  description: "Description for scenario 1"
-                })
-              }
-              className={`cursor-pointer hover:border-primary transition-colors ${selectedScenario?.id === "1" ? 'border-primary' : ''}`}
-            >
-              <CardHeader>
-                <CardTitle>Existing Scenario 1</CardTitle>
-                <CardDescription className="mt-2">Description for scenario 1</CardDescription>
-              </CardHeader>
-            </Card>
-            <Card 
-              onClick={() =>
-                handleSelectScenario({
-                  id: "2",
-                  userId: "user_1", // Add userId property
-                  name: "Existing Scenario 2",
-                  description: "Description for scenario 2"
-                })
-              }
-              className={`cursor-pointer hover:border-primary transition-colors ${selectedScenario?.id === "2" ? 'border-primary' : ''}`}
-            >
-              <CardHeader>
-                <CardTitle>Existing Scenario 2</CardTitle>
-                <CardDescription className="mt-2">Description for scenario 2</CardDescription>
-              </CardHeader>
-            </Card>
+          <TabsContent value="my-scenarios" className="mt-4 grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
+            {mockMyScenarios.map((scenario) => (
+              <Card
+                key={scenario.id}
+                onClick={() => handleSelectScenario(scenario)}
+                className={`cursor-pointer transition-colors hover:border-primary ${
+                  selectedScenario?.id === scenario.id ? "border-primary" : ""
+                }`}
+              >
+                <CardHeader>
+                  <CardTitle>{scenario.name}</CardTitle>
+                  <CardDescription className="mt-2">{scenario.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
           </TabsContent>
-          <TabsContent value="community" className="grid grid-cols-1 gap-4 mt-4">
-            {/* Render list of community scenarios */}
-            <Card 
-              onClick={() =>
-                handleSelectScenario({
-                  id: "3",
-                  userId: "user_2", // Add userId property
-                  name: "Community Scenario",
-                  description: "Description for community scenario"
-                })
-              }
-              className={`cursor-pointer hover:border-primary transition-colors ${selectedScenario?.id === "3" ? 'border-primary' : ''}`}
-            >
-              <CardHeader>
-                <CardTitle>Community Scenario</CardTitle>
-                <CardDescription className="mt-2">Description for community scenario</CardDescription>
-              </CardHeader>
-            </Card>
+          <TabsContent value="community" className="mt-4 grid grid-cols-1 gap-4 max-h-[300px] overflow-y-auto pr-2">
+            {mockCommunityScenarios.map((scenario) => (
+              <Card
+                key={scenario.id}
+                onClick={() => handleSelectScenario(scenario)}
+                className={`cursor-pointer transition-colors hover:border-primary ${
+                  selectedScenario?.id === scenario.id ? "border-primary" : ""
+                }`}
+              >
+                <CardHeader>
+                  <CardTitle>{scenario.name}</CardTitle>
+                  <CardDescription className="mt-2">{scenario.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
           </TabsContent>
           <TabsContent value="new">
-            <div className="space-y-4 p-4">
-              <Input
-                name="scenarioName"
-                value={newScenario.scenarioName}
-                onChange={handleNewScenarioChange}
-                placeholder="Scenario Name"
-              />
-              <Input
-                name="scenarioDescription"
-                value={newScenario.scenarioDescription}
-                onChange={handleNewScenarioChange}
-                placeholder="Scenario Description"
-              />
+            <div className="p-4">
+              <div className="mb-4">
+                <Input
+                  name="name"
+                  value={newScenario.name}
+                  onChange={handleNewScenarioChange}
+                  placeholder="Scenario Name"
+                />
+              </div>
+              <div className="mb-4">
+                <Input
+                  name="description"
+                  value={newScenario.description}
+                  onChange={handleNewScenarioChange}
+                  placeholder="Scenario Description"
+                />
+              </div>
               <Button onClick={handleCreateNewScenario}>Create Scenario</Button>
             </div>
           </TabsContent>

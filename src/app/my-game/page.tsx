@@ -1,12 +1,5 @@
 "use client";
 
-import { keyframes } from "@emotion/react";
-
-const grow = keyframes`
-  0%, 100% { width: 15%; }
-  50% { width: 90%; }
-`;
-
 import type React from "react";
 import { useState, useEffect } from "react";
 import axios from "@/lib/axios";

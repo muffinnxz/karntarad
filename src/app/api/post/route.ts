@@ -65,6 +65,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "AI response is incorrect." }, { status: 500 });
     }
     const likeCountJson = JSON.parse(aiOutput);
+
+    console.log("likeCountJson is:", likeCountJson);
     console.log("Estimated like count by ai is:", likeCountJson.likes);
 
     // 2. user create post
@@ -166,6 +168,8 @@ export async function POST(req: NextRequest) {
       throw new Error("Failed to parse AI character posts output: " + err);
     }
 
+    console.log("AI-generated posts:", aiPosts);
+
     // Create a lookup map for characters using their ID as key
     const characterMap = new Map<string, Character>(); // Replace 'any' with your Character interface type if available
     for (const character of game.characterList) {
@@ -173,6 +177,8 @@ export async function POST(req: NextRequest) {
         characterMap.set(character.username, character);
       }
     }
+
+    console.log("Character map:", characterMap);
 
     const createPost = async (v: { username: string; content: string; likes: number }) => {
       const postRef = firestore.collection("posts").doc();
@@ -182,7 +188,7 @@ export async function POST(req: NextRequest) {
       await postRef.set({
         id: postRef.id,
         gameId: game.id,
-        day: 0,
+        day: day + 1,
         creator: {
           name: character?.name || "Unknown",
           username: character?.username || "Unknown",
@@ -197,7 +203,12 @@ export async function POST(req: NextRequest) {
 
     console.log("AI-generated posts have been saved to Firestore.");
 
-    await updateGame(gameId, day + 1, day + 1 === 6 ? "completed" : "in_progress");
+    await updateGame(
+      gameId,
+      day + 1,
+      day + 1 === 6 ? "completed" : "in_progress",
+      game.followerCount + likeCountJson.likes
+    );
   } catch (error) {
     console.error("creating post.", error);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });

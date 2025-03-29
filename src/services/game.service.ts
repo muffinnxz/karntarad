@@ -127,13 +127,14 @@ export const deleteGame = async (gameId: string) => {
   return gameSnapshot.data();
 };
 
-export const updateGame = async (gameId: string, day: number, result: string) => {
+export const updateGame = async (gameId: string, day: number, status: string, followerCount: number) => {
   const fs = admin.firestore();
   const gameRef = fs.collection("games").doc(gameId);
 
   const game = {
-    day: day,
-    result: result
+    day,
+    status,
+    followerCount
   };
   await gameRef.update(game);
   return game;

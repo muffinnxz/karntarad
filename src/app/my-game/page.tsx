@@ -10,13 +10,31 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Calendar, Trash2, X } from "lucide-react";
+import { ArrowLeft, Calendar, Trash2, TrendingUp, BarChart, Plus, Loader2, AlertTriangle, Clock } from "lucide-react";
 import CompanySelector from "@/components/my-game/CompanySelector";
 import ScenarioSelector from "@/components/my-game/ScenarioSelector";
 import type { Company } from "@/interfaces/Company";
 import type { Scenario } from "@/interfaces/Scenario";
 import type { Game } from "@/interfaces/Game";
-import { TrendingUp, BarChart, PieChart, LineChart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 
 export default function LoadGameScreen() {
   const router = useRouter();
@@ -29,8 +47,6 @@ export default function LoadGameScreen() {
   const [savedGames, setSavedGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // New state to track game creation loading
   const [creatingGame, setCreatingGame] = useState(false);
 
   useEffect(() => {
@@ -103,7 +119,6 @@ export default function LoadGameScreen() {
       return;
     }
 
-    // Set loading state to true
     setCreatingGame(true);
 
     axios
@@ -125,208 +140,268 @@ export default function LoadGameScreen() {
         }
       })
       .finally(() => {
-        // Reset loading state
         setCreatingGame(false);
       });
   };
 
+  // Handler to close New Game modal and clear selected fields.
+  const handleCloseNewGameModal = () => {
+    setShowNewGameModal(false);
+    setSelectedCompany(null);
+    setSelectedScenario(null);
+  };
+
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background p-4 md:p-8 flex items-center justify-center">
-        <p className="text-muted-foreground">Checking authentication...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <p className="text-muted-foreground">Checking authentication...</p>
+        </div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background p-4 md:p-8 flex items-center justify-center">
-        <p className="text-muted-foreground">Redirecting to login...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <p className="text-muted-foreground">Redirecting to login...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
-      <div className="mx-auto max-w-6xl">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6 md:py-12">
         <header className="mb-8">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="rounded-full" asChild>
-              <Link href="/">
-                <ArrowLeft className="h-5 w-5" />
-                <span className="sr-only">Back</span>
-              </Link>
-            </Button>
-            <h1 className="text-2xl font-medium">My Games</h1>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="rounded-full" asChild>
+                <Link href="/">
+                  <ArrowLeft className="h-5 w-5" />
+                  <span className="sr-only">Back</span>
+                </Link>
+              </Button>
+              <h1 className="text-2xl font-semibold">My Games</h1>
+            </div>
           </div>
         </header>
 
         <main>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <Card
-              className="flex cursor-pointer flex-col justify-between border border-dashed border-muted-foreground/20 bg-background transition-all hover:border-muted-foreground/40 hover:shadow-sm"
-              onClick={() => setShowNewGameModal(true)}
-            >
-              <div className="flex flex-1 flex-col items-center justify-center p-6">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <Calendar className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <h3 className="mt-4 text-lg font-medium">New Game</h3>
-                <p className="mt-1 text-center text-sm text-muted-foreground">Start a new scenario</p>
-              </div>
-              <div className="p-4">
-                <Button className="w-full" variant="outline">
-                  Create
-                </Button>
-              </div>
-            </Card>
-
-            {loading && (
-              <div className="col-span-full flex justify-center py-12">
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
                 <p className="text-muted-foreground">Loading your games...</p>
               </div>
-            )}
-
-            {error && (
-              <div className="col-span-full flex justify-center py-12">
-                <p className="text-destructive">{error}</p>
+            </div>
+          ) : error ? (
+            <div className="flex justify-center py-16">
+              <div className="flex flex-col items-center gap-4 text-center max-w-md">
+                <AlertTriangle className="h-12 w-12 text-destructive opacity-80" />
+                <h2 className="text-xl font-medium">Unable to load games</h2>
+                <p className="text-muted-foreground">{error}</p>
+                <Button variant="outline" onClick={() => window.location.reload()} className="mt-2">
+                  Try Again
+                </Button>
               </div>
-            )}
+            </div>
+          ) : savedGames.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-6 rounded-full bg-primary/10 p-4">
+                <Calendar className="h-10 w-10 text-primary" />
+              </div>
+              <h2 className="text-2xl font-medium mb-2">No games yet</h2>
+              <p className="text-muted-foreground max-w-md mb-6">
+                Start your marketing journey by creating your first game. Choose a company and scenario to begin.
+              </p>
+              <Button onClick={() => setShowNewGameModal(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Create Your First Game
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <Card
+                className="flex cursor-pointer flex-col justify-between border border-dashed bg-muted/30 transition-all hover:border-primary/30 hover:shadow-sm group"
+                onClick={() => setShowNewGameModal(true)}
+              >
+                <div className="flex flex-1 flex-col items-center justify-center p-8">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <Plus className="h-8 w-8 text-primary" />
+                  </div>
+                  <h3 className="mt-6 text-xl font-medium">New Game</h3>
+                  <p className="mt-2 text-center text-sm text-muted-foreground">Start a new marketing scenario</p>
+                </div>
+              </Card>
 
-            {!loading &&
-              savedGames.map((game) => (
+              {savedGames.map((game) => (
                 <Card
                   key={game.id}
-                  className="cursor-pointer transition-all hover:shadow-sm bg-background"
+                  className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50 overflow-hidden flex flex-col"
                   onClick={() => handleLoadGame(game.id)}
                 >
-                  <CardContent className="p-4">
+                  <CardContent className="p-5 flex-1">
                     <div className="mb-4 flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full overflow-hidden border border-muted flex-shrink-0">
-                          <Image
-                            src={game.company.companyProfileURL || "/placeholder.svg"}
-                            alt={`${game.company.name} logo`}
-                            width={40}
-                            height={40}
-                            className="object-cover"
-                          />
+                        {game.company.companyProfileURL ? (
+                          <div className="h-12 w-12 rounded-md overflow-hidden border border-muted flex-shrink-0 bg-muted/50">
+                            <Image
+                              src={game.company.companyProfileURL || "/placeholder.svg"}
+                              alt={`${game.company.name} logo`}
+                              width={48}
+                              height={48}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-12 w-12 rounded-md border border-muted flex-shrink-0 bg-muted/50 flex items-center justify-center">
+                            <TrendingUp className="h-6 w-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div>
+                          <h3 className="line-clamp-1 text-lg font-medium">{game.company.name}</h3>
+                          <p className="text-xs text-muted-foreground">@{game.company.username || "company"}</p>
                         </div>
-                        <h3 className="line-clamp-1 text-lg font-medium">{game.company.name}</h3>
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 rounded-full opacity-60 hover:opacity-100"
                         onClick={(e) => handleDeleteGame(game.id, e)}
                       >
-                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                        <Trash2 className="h-4 w-4 text-destructive" />
                         <span className="sr-only">Delete</span>
                       </Button>
                     </div>
 
                     <p className="line-clamp-2 text-sm text-muted-foreground mb-4">{game.company.description}</p>
 
-                    <div className="space-y-2">
-                      <div className="flex items-start gap-2">
-                        <span className="text-sm font-medium">Scenario:</span>
-                        <span className="text-sm text-muted-foreground">{game.scenario.name}</span>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          Scenario:
+                          <span className="text-sm font-medium">{game.scenario.name}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 pl-1">{game.scenario.description}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Day {game.day}</span>
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                          <Clock className="h-3 w-3 mr-1" />
+                          Day {game.day}
+                        </Badge>
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className="p-4 pt-0">
-                    <Button className="w-full" variant="default" onClick={() => handleLoadGame(game.id)}>
-                      Load Game
+                  <CardFooter className="p-5 pt-0 mt-auto">
+                    <Button className="w-full" variant="default">
+                      Continue Game
                     </Button>
                   </CardFooter>
                 </Card>
               ))}
-          </div>
+            </div>
+          )}
         </main>
       </div>
 
-      {deleteConfirmation && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-background border rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-medium mb-2">Confirm Deletion</h3>
-            <p className="text-muted-foreground mb-4">
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmation} onOpenChange={(open) => !open && setDeleteConfirmation(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Game</AlertDialogTitle>
+            <AlertDialogDescription>
               Are you sure you want to delete this saved game? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirmation && confirmDelete(deleteConfirmation)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* New Game Dialog */}
+      <Dialog
+        open={showNewGameModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCloseNewGameModal();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Game</DialogTitle>
+            <DialogDescription>Select a company and scenario to start your marketing journey.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="company">Company</Label>
+              <CompanySelector selectedCompany={selectedCompany} onCompanySelect={setSelectedCompany} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="scenario">Scenario</Label>
+              <ScenarioSelector selectedScenario={selectedScenario} onScenarioSelect={setSelectedScenario} />
+            </div>
+          </div>
+
+          {(!selectedCompany || !selectedScenario) && (
+            <p className="text-xs text-destructive text-center mb-2">
+              {!selectedCompany && !selectedScenario
+                ? "Both company and scenario are required."
+                : !selectedCompany
+                ? "Company is required."
+                : "Scenario is required."}
             </p>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setDeleteConfirmation(null)}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={() => confirmDelete(deleteConfirmation)}>
-                Delete
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {showNewGameModal && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-background border rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">Create New Game</h3>
-              <Button variant="ghost" size="icon" onClick={() => setShowNewGameModal(false)}>
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Company</Label>
-                <CompanySelector selectedCompany={selectedCompany} onCompanySelect={setSelectedCompany} />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Scenario</Label>
-                <ScenarioSelector selectedScenario={selectedScenario} onScenarioSelect={setSelectedScenario} />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setShowNewGameModal(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                onClick={handleCreateNewGame}
-                disabled={!selectedCompany || !selectedScenario || creatingGame}
-                className="relative"
-              >
-                {creatingGame ? (
-                  <span className="flex items-center gap-2">
-                    <span className="animate-pulse">Preparing</span>
-                    <span className="flex">
-                      {[TrendingUp, BarChart, PieChart, LineChart].map((Icon, index) => (
-                        <Icon
-                          key={index}
-                          className="h-4 w-4 animate-bounce"
-                          style={{
-                            animationDelay: `${index * 150}ms`,
-                            opacity: 0.8
-                          }}
-                        />
-                      ))}
-                    </span>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseNewGameModal} disabled={creatingGame}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateNewGame}
+              disabled={!selectedCompany || !selectedScenario || creatingGame}
+              className="min-w-[120px]"
+            >
+              {creatingGame ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-pulse">Preparing</span>
+                  <span className="flex">
+                    {[TrendingUp, BarChart].map((Icon, index) => (
+                      <Icon
+                        key={index}
+                        className="h-4 w-4 animate-bounce"
+                        style={{
+                          animationDelay: `${index * 150}ms`,
+                          opacity: 0.8
+                        }}
+                      />
+                    ))}
                   </span>
-                ) : (
-                  "Create Game"
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+                </span>
+              ) : (
+                "Create Game"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
+      {/* Creating Game Overlay */}
       {creatingGame && (
-        <div className="fixed inset-0 bg-background/70 backdrop-blur-sm z-[60] flex flex-col items-center justify-center">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
           <div className="bg-card border rounded-xl shadow-lg p-8 max-w-md w-full mx-4 text-center">
             <div className="relative mb-6 mx-auto w-24 h-24">
               <div className="absolute inset-0 border-t-4 border-primary rounded-full animate-spin"></div>
@@ -346,6 +421,18 @@ export default function LoadGameScreen() {
             <h3 className="text-xl font-medium mb-2">Creating Your Marketing Game</h3>
             <div className="space-y-1 mb-4">
               <p className="text-muted-foreground">Preparing marketing scenarios...</p>
+            </div>
+            <div className="flex justify-center items-center gap-2 mb-4">
+              {[TrendingUp, BarChart].map((Icon, index) => (
+                <Icon
+                  key={index}
+                  className="h-5 w-5 text-primary animate-bounce"
+                  style={{
+                    animationDelay: `${index * 150}ms`,
+                    opacity: 0.8
+                  }}
+                />
+              ))}
             </div>
             <p className="text-sm text-muted-foreground">
               Get ready to apply your marketing knowledge and make strategic decisions!

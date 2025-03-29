@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { keyframes } from "@emotion/react";
+
+const grow = keyframes`
+  0%, 100% { width: 15%; }
+  50% { width: 90%; }
+`;
+
+import type React from "react";
+import { useState, useEffect } from "react";
 import axios from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
@@ -12,9 +20,10 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Calendar, Trash2, X } from "lucide-react";
 import CompanySelector from "@/components/my-game/CompanySelector";
 import ScenarioSelector from "@/components/my-game/ScenarioSelector";
-import { Company } from "@/interfaces/Company";
-import { Scenario } from "@/interfaces/Scenario";
-import { Game } from "@/interfaces/Game";
+import type { Company } from "@/interfaces/Company";
+import type { Scenario } from "@/interfaces/Scenario";
+import type { Game } from "@/interfaces/Game";
+import { TrendingUp, BarChart, PieChart, LineChart } from "lucide-react";
 
 export default function LoadGameScreen() {
   const router = useRouter();
@@ -296,10 +305,58 @@ export default function LoadGameScreen() {
                 variant="default"
                 onClick={handleCreateNewGame}
                 disabled={!selectedCompany || !selectedScenario || creatingGame}
+                className="relative"
               >
-                {creatingGame ? "Creating..." : "Create Game"}
+                {creatingGame ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-pulse">Preparing</span>
+                    <span className="flex">
+                      {[TrendingUp, BarChart, PieChart, LineChart].map((Icon, index) => (
+                        <Icon
+                          key={index}
+                          className="h-4 w-4 animate-bounce"
+                          style={{
+                            animationDelay: `${index * 150}ms`,
+                            opacity: 0.8
+                          }}
+                        />
+                      ))}
+                    </span>
+                  </span>
+                ) : (
+                  "Create Game"
+                )}
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {creatingGame && (
+        <div className="fixed inset-0 bg-background/70 backdrop-blur-sm z-[60] flex flex-col items-center justify-center">
+          <div className="bg-card border rounded-xl shadow-lg p-8 max-w-md w-full mx-4 text-center">
+            <div className="relative mb-6 mx-auto w-24 h-24">
+              <div className="absolute inset-0 border-t-4 border-primary rounded-full animate-spin"></div>
+              <div
+                className="absolute inset-2 border-r-4 border-primary/70 rounded-full animate-spin"
+                style={{ animationDuration: "1.5s", animationDirection: "reverse" }}
+              ></div>
+              <div
+                className="absolute inset-4 border-b-4 border-primary/50 rounded-full animate-spin"
+                style={{ animationDuration: "2s" }}
+              ></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <TrendingUp className="h-8 w-8 text-primary animate-pulse" />
+              </div>
+            </div>
+
+            <h3 className="text-xl font-medium mb-2">Creating Your Marketing Game</h3>
+            <div className="space-y-1 mb-4">
+              <p className="text-muted-foreground">Preparing marketing scenarios...</p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Get ready to apply your marketing knowledge and make strategic decisions!
+            </p>
           </div>
         </div>
       )}

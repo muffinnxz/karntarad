@@ -6,15 +6,12 @@ import { Post } from "@/interfaces/Post";
 import { uploadBase64 } from "@/lib/firebase-storage";
 
 export async function POST(req: NextRequest) {
-
   // Authenticate user
   const auth = await authMiddleware(req);
 
   if (auth instanceof NextResponse) return auth; // Return 401 response if unauthorized
 
-
   try {
-
     const { gameId, day, text, image } = await req.json();
     const decodedUser = auth.user; // Extract user from auth middleware
 
@@ -26,8 +23,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Day must be between 0 and 6." }, { status: 400 });
     }
 
-
-    // 1. user create post 
+    // 1. user create post
     const firestore = admin.firestore();
     const newDocRef = firestore.collection("posts").doc(); // auto-generate doc ID
     const newPost: Post = {
@@ -40,11 +36,11 @@ export async function POST(req: NextRequest) {
         displayName: decodedUser.name ?? "",
         email: decodedUser.email ?? "",
         photoURL: decodedUser.picture ?? "",
-        createdAt: new Date(), // or load from Firestore if needed
+        createdAt: new Date() // or load from Firestore if needed
       },
       text,
       numLikes: 0, // new post starts with 0 likes
-      image: "", // will set below if we actually have an image
+      image: "" // will set below if we actually have an image
     };
 
     if (image) {
@@ -58,21 +54,9 @@ export async function POST(req: NextRequest) {
     await newDocRef.set(newPost);
     console.log("Post created successfully:", newPost);
 
-
-
-
     // 2. decide like and follower change
 
-
-
-
-
     // 3. bots create posts
-
-
-    
-
-
   } catch (error) {
     console.error("creating post.", error);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
@@ -80,9 +64,6 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ message: "Post created successfully." }, { status: 200 });
 }
-
-
-
 
 export async function GET(req: NextRequest) {
   // Authenticate user
@@ -118,7 +99,6 @@ export async function GET(req: NextRequest) {
 
     // Return posts array
     return NextResponse.json(posts, { status: 200 });
-
   } catch (error) {
     console.error("Error fetching posts:", error);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });

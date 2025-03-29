@@ -9,31 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, Heart } from "lucide-react";
-
-// Define a Character interface (adjust according to your actual Character.ts)
-interface Character {
-  name: string;
-  username: string;
-  image?: string;
-  banner?: string;
-  description: string;
-}
-
-// Define a Post interface (adjust fields as needed)
-interface Post {
-  id: string;
-  gameId: string;
-  day: number;
-  creator: {
-    name: string;
-    username: string;
-    image?: string;
-  };
-  text: string;
-  image?: string;
-  numLikes: number;
-  createdAt?: string;
-}
+import { Character } from "@/interfaces/Character";
+import { Post } from "@/interfaces/Post";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Format text with @ and # highlighting
 const formatText = (id: string, text: string) => {
@@ -106,7 +84,6 @@ const PostItem = ({ post }: { post: Post }) => {
           <AvatarImage src={post.creator.image || "/placeholder.svg"} alt={post.creator.name} />
           <AvatarFallback>{post.creator.name.charAt(0)}</AvatarFallback>
         </Avatar>
-
         <div className="flex-1">
           <div className="flex items-center">
             <span className="font-semibold hover:underline cursor-pointer" onClick={handleProfileClick}>
@@ -118,9 +95,7 @@ const PostItem = ({ post }: { post: Post }) => {
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
           </div>
-
           <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
-
           {post.image && (
             <div className="mt-3 rounded-xl overflow-hidden">
               <Image
@@ -132,7 +107,6 @@ const PostItem = ({ post }: { post: Post }) => {
               />
             </div>
           )}
-
           <div className="flex mt-3 text-gray-500">
             <Button variant="ghost" size="sm" className="flex items-center space-x-1">
               <Heart className="h-4 w-4" />
@@ -145,37 +119,59 @@ const PostItem = ({ post }: { post: Post }) => {
   );
 };
 
-export default function BotProfilePage({ params }: { params: { id: string; "profile-id": string } }) {
+export default function UserProfilePage({ params }: { params: { id: string; "profile-id": string } }) {
   const searchParams = useSearchParams();
-  const [character, setCharacter] = useState<Character | null>(null);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<Character | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   useEffect(() => {
-    // Fetch game data to get the character list
+    // Fetch game data which includes both company and characterList
     axios
       .get(`/game?id=${params.id}`)
       .then((response) => {
         const gameData = response.data[0];
-        const foundCharacter = gameData.characterList.find((ch: Character) => ch.username === params["profile-id"]);
-        setCharacter(foundCharacter);
+        // If the profile-id matches the company's username, use company data
+        if (params["profile-id"] === gameData.company.username) {
+          const companyProfile: Character = {
+            id: gameData.company.id, // Ensure the 'id' property is included
+            name: gameData.company.name,
+            username: gameData.company.username,
+            image: gameData.company.companyProfileURL,
+            description: gameData.company.description
+          };
+          setProfile(companyProfile);
+          // Check if the current user is the company owner
+          if (user && user.uid === gameData.company.userId) {
+            setIsOwnProfile(true);
+          }
+        } else {
+          // Otherwise, use a character from the characterList
+          const foundCharacter = gameData.characterList.find((ch: Character) => ch.username === params["profile-id"]);
+          setProfile(foundCharacter);
+          if (user && foundCharacter && user.displayName === foundCharacter.name) {
+            setIsOwnProfile(true);
+          }
+        }
       })
       .catch((error) => {
         console.error("Error fetching game data:", error);
       });
-  }, [params.id, params["profile-id"]]);
+  }, [params.id, params["profile-id"], user]);
 
   useEffect(() => {
-    // Once we have the character, fetch all posts and filter by the character's username
-    if (character) {
+    // Once the profile is set, fetch all posts for the game and filter by the profile's username
+    if (profile) {
       axios
         .get(`/post?gameId=${params.id}`)
         .then((response) => {
           const allPosts: Post[] = response.data;
-          const characterPosts = allPosts.filter((post) => post.creator.username === character.username);
+          const profilePosts = allPosts.filter((post) => post.creator.username === profile.username);
           // Sort posts by day in ascending order
-          characterPosts.sort((a, b) => a.day - b.day);
-          setPosts(characterPosts);
+          profilePosts.sort((a, b) => a.day - b.day);
+          setPosts(profilePosts);
         })
         .catch((error) => {
           console.error("Error fetching posts:", error);
@@ -184,14 +180,14 @@ export default function BotProfilePage({ params }: { params: { id: string; "prof
           setLoading(false);
         });
     }
-  }, [character, params.id]);
+  }, [profile, params.id]);
 
-  if (!character || loading) return <p>Loading...</p>;
+  if (!profile || loading) return <p>Loading...</p>;
 
-  // Use a default banner if none is provided
-  const bannerImage = character.banner || "/banner/character-banner-temp.png";
+  // Use a default banner image (you can update this if the profile has a banner property)
+  const bannerImage = "/banner/character-banner-temp.png";
   // Use a default avatar image if none is provided
-  const avatarImage = character.image || "";
+  const avatarImage = profile.image || "";
 
   return (
     <div className="max-w-full">
@@ -202,7 +198,7 @@ export default function BotProfilePage({ params }: { params: { id: string; "prof
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
-        <h1 className="text-xl font-bold">{character.name}</h1>
+        <h1 className="text-xl font-bold">{profile.name}</h1>
       </div>
 
       {/* Banner and Profile Info */}
@@ -221,18 +217,23 @@ export default function BotProfilePage({ params }: { params: { id: string; "prof
             <div className="relative -mt-16">
               <div className="h-32 w-32 rounded-full border-4 border-white overflow-hidden flex items-center justify-center bg-gray-300 text-4xl font-bold">
                 {avatarImage ? (
-                  <Image src={avatarImage} alt={character.name} width={128} height={128} className="object-cover" />
+                  <Image src={avatarImage} alt={profile.name} width={128} height={128} className="object-cover" />
                 ) : (
-                  character.name.charAt(0).toUpperCase()
+                  profile.name.charAt(0).toUpperCase()
                 )}
               </div>
             </div>
           </div>
           <div className="mt-3">
-            <h2 className="text-xl font-bold">{character.name}</h2>
-            <p className="text-gray-500">@{character.username}</p>
+            <div className="flex items-center">
+              <h2 className="text-xl font-bold">{profile.name}</h2>
+              {isOwnProfile && (
+                <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">You</span>
+              )}
+            </div>
+            <p className="text-gray-500">@{profile.username}</p>
           </div>
-          <p className="mt-3 text-gray-700">{character.description}</p>
+          <p className="mt-3 text-gray-700">{profile.description}</p>
         </div>
       </div>
 

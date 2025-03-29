@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authMiddleware } from "@/middleware/authMiddleware";
 import admin from "@/lib/firebase-admin";
-const Together = require("together-ai");
+// import Together from "together-ai";
 import { Post } from "@/interfaces/Post";
 import { uploadBase64 } from "@/lib/firebase-storage";
 

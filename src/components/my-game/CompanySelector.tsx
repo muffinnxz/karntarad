@@ -17,7 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 // Icons
-import { X } from "lucide-react";
+import { X, Trash2 } from "lucide-react";
 // Types
 import { Company } from "@/interfaces/Company";
 import axios from "@/lib/axios";
@@ -156,6 +156,30 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
   };
 
   /**
+   * Delete a company using the API
+   * @param companyId - The ID of the company to delete
+   */
+  const handleDeleteCompany = (companyId: string) => {
+    axios
+      .delete("/company", {
+        data: { id: companyId }
+      })
+      .then(() => {
+        console.log("Company deleted successfully");
+        // Remove the company from the list
+        setMyCompanies((prevCompanies) => prevCompanies.filter((company) => company.id !== companyId));
+        
+        // If the deleted company was selected, clear the selection
+        if (selectedCompany?.id === companyId) {
+          onCompanySelect(null);
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting company:", error);
+      });
+  };
+
+  /**
    * Select a company from the fetched data and close the dialog.
    */
   const handleSelectCompany = (company: Company) => {
@@ -227,12 +251,11 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
             {myCompanies.map((company) => (
               <Card
                 key={company.id}
-                onClick={() => handleSelectCompany(company)}
-                className={`cursor-pointer transition-colors hover:border-primary ${
+                className={`relative cursor-pointer transition-colors hover:border-primary ${
                   selectedCompany?.id === company.id ? "border-primary" : ""
                 }`}
               >
-                <CardHeader>
+                <CardHeader onClick={() => handleSelectCompany(company)}>
                   <div className="flex items-start gap-4">
                     {company.companyProfileURL && (
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
@@ -251,6 +274,18 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
                     </div>
                   </div>
                 </CardHeader>
+                <button
+                  className="absolute bottom-4 right-4 flex h-8 w-8 items-center justify-center rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm(`Are you sure you want to delete "${company.name}"?`)) {
+                      handleDeleteCompany(company.id);
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete company</span>
+                </button>
               </Card>
             ))}
           </TabsContent>

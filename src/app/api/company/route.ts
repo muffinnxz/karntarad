@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, description, companyProfilePicture, isPublic } = body;
 
-    if (!name || !description) {
+    if (!name || !description || isPublic === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 

@@ -60,7 +60,9 @@ export const updateCompany = async (companyId: string, userId: string, name: str
 		userId: userId,
 		name: name,
 		description: description,
-		companyProfileURL: companyProfileURL
+		companyProfileURL: companyProfileURL,
+		isPublic: true,
+		createdAt: new Date()
 	}
 	await fs.collection("companies").doc(companyId).update(company);
 	return company;

@@ -28,13 +28,17 @@ const savedGames: Game[] = [
       userId: "user_1",
       name: "Acme Marketing",
       description: "Digital marketing agency specializing in growth strategies",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     scenario: {
       id: "s1",
       userId: "user_1",
       name: "Product Launch",
-      description: "Launch a new product in a competitive market"
+      description: "Launch a new product in a competitive market",
+      isPublic: true,
+      createdAt: new Date()
     },
     userId: "user_1",
     day: 0,
@@ -47,13 +51,17 @@ const savedGames: Game[] = [
       userId: "user_1",
       name: "TechVision",
       description: "Software development company focused on AI solutions",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     scenario: {
       id: "s2",
       userId: "user_1",
       name: "Market Research",
-      description: "Conduct market research for a new product line"
+      description: "Conduct market research for a new product line",
+      isPublic: true,
+      createdAt: new Date()
     },
     userId: "user_1",
     day: 2,
@@ -66,13 +74,17 @@ const savedGames: Game[] = [
       userId: "user_1",
       name: "Global Solutions",
       description: "International consulting firm for business transformation",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     scenario: {
       id: "s3",
       userId: "user_1",
       name: "Client Negotiation",
-      description: "Negotiate a major contract with a potential client"
+      description: "Negotiate a major contract with a potential client",
+      isPublic: true,
+      createdAt: new Date()
     },
     userId: "user_1",
     day: 1,
@@ -85,13 +97,17 @@ const savedGames: Game[] = [
       userId: "user_1",
       name: "Innovate Health",
       description: "Healthcare technology provider improving patient outcomes",
-      image: "/placeholder/company-profile.svg"
+      companyProfileURL: "/placeholder/company-profile.svg",
+      isPublic: true,
+      createdAt: new Date()
     },
     scenario: {
       id: "s4",
       userId: "user_1",
       name: "Expansion Planning",
-      description: "Plan expansion into new markets"
+      description: "Plan expansion into new markets",
+      isPublic: true,
+      createdAt: new Date()
     },
     userId: "user_1",
     day: 3,
@@ -222,7 +238,7 @@ export default function LoadGameScreen() {
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full overflow-hidden border border-muted flex-shrink-0">
                           <Image
-                            src={game.company.image || "/placeholder.svg"}
+                            src={game.company.companyProfileURL || "/placeholder.svg"}
                             alt={`${game.company.name} logo`}
                             width={40}
                             height={40}

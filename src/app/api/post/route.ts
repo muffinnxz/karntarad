@@ -4,6 +4,10 @@ import admin from "@/lib/firebase-admin";
 import Together from "together-ai";
 import { Post } from "@/interfaces/Post";
 import { uploadBase64 } from "@/lib/firebase-storage";
+import { Character } from "@/interfaces/Character";
+import { getGame, updateGame } from "@/services/game.service";
+import path from "path";
+import fs from "fs";
 
 export async function POST(req: NextRequest) {
   // Authenticate user
@@ -23,104 +27,74 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Day must be between 0 and 6." }, { status: 400 });
     }
 
-    // 1. user create post
+    const game = await getGame(gameId);
+
+    const imageUrl = image ? await uploadBase64(image, `${gameId}-${day}-${decodedUser.uid}`) : "";
+
+    // 1. decide like and follower change
+
+    const generateLikeCountFile = path.join(process.cwd(), "src/prompts/likecount.txt");
+    const likeCountContent = fs.readFileSync(generateLikeCountFile, "utf-8");
+
+    const likeCountPrompt = likeCountContent
+      .replace("{{company}}", JSON.stringify(game.company, null, 2))
+      .replace("{{scenario}}", JSON.stringify(game.scenario, null, 2))
+      .replace("{{characterListStr}}", JSON.stringify(game.characterList, null, 2))
+      .replace("{{postText}}", text);
+
+    // together api call
+    const together = new Together({
+      apiKey: process.env.TOGETHER_API_KEY
+    });
+    const responseLikeCount = await together.chat.completions.create({
+      model: "deepseek-ai/DeepSeek-V3",
+      messages: [
+        {
+          role: "system",
+          content: likeCountPrompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 512,
+      response_format: { type: "json_object" }
+    });
+
+    console.log("responseLikeCount from Together API is:", responseLikeCount);
+    const aiOutput = responseLikeCount?.choices[0]?.message?.content;
+    if (!aiOutput) {
+      return NextResponse.json({ message: "AI response is incorrect." }, { status: 500 });
+    }
+    const likeCountJson = JSON.parse(aiOutput);
+
+    console.log("likeCountJson is:", likeCountJson);
+    console.log("Estimated like count by ai is:", likeCountJson.likes);
+
+    // 2. user create post
     const firestore = admin.firestore();
     const newDocRef = firestore.collection("posts").doc(); // auto-generate doc ID
     const newPost: Post = {
       id: newDocRef.id,
       gameId,
       day,
-      user: {
-        // The decoded token might not have all these fields
-        id: decodedUser.uid,
-        displayName: decodedUser.name ?? "",
-        email: decodedUser.email ?? "",
-        photoURL: decodedUser.picture ?? "",
-        createdAt: new Date() // or load from Firestore if needed
+      creator: {
+        name: game.company.name,
+        username: game.company.username,
+        image: game.company.companyProfileURL
       },
       text,
-      numLikes: 0, // new post starts with 0 likes
-      image: "" // will set below if we actually have an image
+      numLikes: likeCountJson.likes,
+      image: imageUrl
     };
-
-    if (image) {
-      // Use doc ID as storage path (you can append .jpg if you wish, e.g. `${newDocRef.id}.jpg`)
-      const storagePath = newDocRef.id;
-      const uploadedUrl = await uploadBase64(image, storagePath);
-      newPost.image = uploadedUrl; // store the returned public URL
-    }
 
     // Save to Firestore
     await newDocRef.set(newPost);
     console.log("Post created successfully:", newPost);
 
-
-
-
-    // 2. decide like and follower change
-    const gameDocRef = firestore.collection("games").doc(gameId);
-    const gameDoc = await gameDocRef.get();
-
-    if (!gameDoc.exists) {
-      return NextResponse.json({ message: "Game not found." }, { status: 404 });
-    }
-
-    // Get the characterList field from the game doc
-    const gameData = gameDoc.data();
-    const { characterList } = gameData || {};
-
-    // Ensure it’s a valid array
-    if (!Array.isArray(characterList)) {
-      return NextResponse.json({ message: "Invalid or missing characterList in game doc." }, { status: 400 });
-    }
-
-    // Convert it to a string (if you need to pass it to some external service or for logging)
-    const characterListStr = JSON.stringify(characterList);
-
-    const postText = text;
-
-
-    // final message to be sent to the AI
-    const fsPromises = await import("fs/promises");
-    const promptTemplate = await fsPromises.readFile("src/prompts/likecount.txt", "utf8");
-    const finalMessage = promptTemplate
-      .replace(/{{characterListStr}}/g, characterListStr)
-      .replace(/{{postText}}/g, postText);
-    console.log("Final prompt to AI:", finalMessage);
-
-    // together api call
-    const together = new Together({
-      apiKey: process.env.TOGETHER_API_KEY,
-    });
-    const responseLikeCount = await together.chat.completions.create({
-      model: "deepseek-ai/DeepSeek-V3",
-      messages: [
-        {
-          role: "user",
-          content: finalMessage,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 512,
-    });
-
-    console.log("responseLikeCount from Together API is:", responseLikeCount);
-    const aiOutput = responseLikeCount?.choices[0]?.message?.content;
-    if(!aiOutput) {
-      return NextResponse.json({ message: "AI response is incorrect." }, { status: 500 });
-    }
-    const likeCount = parseInt(aiOutput?.trim(), 10);
-    console.log("Estimated like count by ai is:", likeCount);
-
-    
-    
-
-
     // 3. bots create posts
 
-    const companyDescription = gameData?.company?.description;
-    const scenarioDescription = gameData?.scenario?.description;
-    const companyUsername = gameData?.company?.username;
+    const companyDescription = game.company.description;
+    const scenarioDescription = game.scenario.description;
+    const companyUsername = game.company.username;
     // Query all previous posts for this game
     const postsSnapshot = await firestore.collection("posts").where("gameId", "==", gameId).get();
     const allPreviousPost = postsSnapshot.docs.map((doc) => doc.data());
@@ -130,15 +104,18 @@ export async function POST(req: NextRequest) {
     console.log("Company Username:", companyUsername);
     console.log("All previous posts:", allPreviousPost);
 
-  
     // Read the character-create-post prompt template
-    const characterPromptTemplate = await fsPromises.readFile("src/prompts/character-create-post.txt", "utf8");
+    const characterCreatePostFile = path.join(process.cwd(), "src/prompts/character-create-post.txt");
+    const characterCreatePostContent = fs.readFileSync(characterCreatePostFile, "utf8");
+
+    const characterListStr = JSON.stringify(game.characterList, null, 2);
+    const postText = text;
 
     // allPreviousPost should be a JSON string of the previous posts
     const allPreviousPostStr = JSON.stringify(allPreviousPost);
 
     // Replace the placeholders in the template using regex
-    const finalCharacterPrompt = characterPromptTemplate
+    const finalCharacterPrompt = characterCreatePostContent
       .replace(/{{characterListStr}}/g, characterListStr)
       .replace(/{{postText}}/g, postText)
       .replace(/{{companyDescription}}/g, companyDescription)
@@ -150,36 +127,31 @@ export async function POST(req: NextRequest) {
 
     // Together API call for generating character posts
     const togetherForCharacterPosts = new Together({
-      apiKey: process.env.TOGETHER_API_KEY,
+      apiKey: process.env.TOGETHER_API_KEY
     });
-
-
 
     const responseCharacterPosts = await togetherForCharacterPosts.chat.completions.create({
       model: "deepseek-ai/DeepSeek-V3",
       messages: [
         {
           role: "user",
-          content: finalCharacterPrompt,
-        },
+          content: finalCharacterPrompt
+        }
       ],
       temperature: 0.7,
       max_tokens: 1024,
+      response_format: { type: "json_object" }
     });
-    
+
     console.log("Response from Together API for character posts:", responseCharacterPosts);
-    
+
     const aiCharacterPostsOutput = responseCharacterPosts?.choices[0]?.message?.content;
     if (!aiCharacterPostsOutput) {
       throw new Error("AI response for character posts is incorrect.");
     }
-    
+
     // Log the AI output (should be a JSON array with one post per character)
     console.log("Generated character posts from AI:", aiCharacterPostsOutput);
-
-
-
-
 
     // 4. replaceMap data preparation
     // Clean up the AI output to remove markdown formatting if present
@@ -189,53 +161,54 @@ export async function POST(req: NextRequest) {
       cleanedOutput = cleanedOutput.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
     }
 
-    let aiPosts: Array<{ characterId: string; text: string; numLikes: number }> = [];
+    let aiPosts: Array<{ username: string; content: string; likes: number }> = [];
     try {
       aiPosts = JSON.parse(cleanedOutput);
     } catch (err) {
       throw new Error("Failed to parse AI character posts output: " + err);
     }
 
+    console.log("AI-generated posts:", aiPosts);
+
     // Create a lookup map for characters using their ID as key
-    const characterMap = new Map<string, any>(); // Replace 'any' with your Character interface type if available
-    for (const character of characterList) {
-      characterMap.set(character.id, character);
-    }
-
-    // Map each AI post to a new Post object (omitting image, banner, and bio)
-    const aiGeneratedPosts = aiPosts.map(aiPost => {
-      // Generate a new ID for the AI post
-      const aiPostId = admin.firestore().collection("posts").doc().id;
-      // Lookup the corresponding character from the characterList
-      const characterObj = characterMap.get(aiPost.characterId);
-      if (!characterObj) {
-        throw new Error(`Character with id ${aiPost.characterId} not found in characterList.`);
+    const characterMap = new Map<string, Character>(); // Replace 'any' with your Character interface type if available
+    for (const character of game.characterList) {
+      if (character.username) {
+        characterMap.set(character.username, character);
       }
-      
-      // Return the mapped post object following the Post interface
-      return {
-        id: aiPostId,
-        gameId: gameId,
-        day: day,
-        character: characterObj,
-        text: aiPost.text,
-        numLikes: 0 // initialize to 0
-      };
-    });
-
-    // The aiGeneratedPosts array now serves as the replaceMap ready for actual posting.
-    console.log("ReplaceMap for AI-generated posts:", aiGeneratedPosts);
-
-
-    // 5. Create posts for each character
-    for (const aiPost of aiGeneratedPosts) {
-      // Create a document reference in the "posts" collection using the generated post id
-      const aiPostDocRef = firestore.collection("posts").doc(aiPost.id);
-      await aiPostDocRef.set(aiPost);
     }
-    
+
+    console.log("Character map:", characterMap);
+
+    const createPost = async (v: { username: string; content: string; likes: number }) => {
+      const postRef = firestore.collection("posts").doc();
+
+      const character = characterMap.get(v.username);
+
+      await postRef.set({
+        id: postRef.id,
+        gameId: game.id,
+        day: day + 1,
+        creator: {
+          name: character?.name || "Unknown",
+          username: character?.username || "Unknown",
+          image: character?.image || ""
+        },
+        text: v.content,
+        numLikes: v.likes || 0
+      });
+    };
+
+    await Promise.all(aiPosts.map(createPost));
+
     console.log("AI-generated posts have been saved to Firestore.");
 
+    await updateGame(
+      gameId,
+      day + 1,
+      day + 1 === 6 ? "completed" : "in_progress",
+      game.followerCount + likeCountJson.likes
+    );
   } catch (error) {
     console.error("creating post.", error);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });

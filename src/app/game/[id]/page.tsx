@@ -11,10 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Heart, ImageIcon, X, Send, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { DayType, Post } from "@/interfaces/Post";
+import { Post } from "@/interfaces/Post";
 import { Game } from "@/interfaces/Game";
 import { useAuth } from "@/contexts/AuthContext";
-import axios from "@/lib/axios"
+import axios from "@/lib/axios";
 
 // Function to format text with @ and # highlighting
 const formatText = (id: string, text: string) => {
@@ -69,101 +69,75 @@ const formatDay = (day: number) => {
 };
 
 const PostItem = ({ post }: { post: Post }) => {
-    const router = useRouter();
-  
-    const handleProfileClick = (e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent post click event
-  
-      if (post.character) {
-        const query = new URLSearchParams({
-          name: post.character.name || "",
-          image: post.character.image || "",
-        }).toString();
-        router.push(`/game/${post.gameId}/profile/${post.character.id}?${query}`);
-      }
-    };
-  
-    return (
-      <Card className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors cursor-pointer">
-        <div className="flex items-start space-x-3">
-          {/* Avatar Clickable */}
-          {post.user ? (
-            <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
-              <AvatarImage src={post.user.photoURL} alt={post.user.displayName} />
-              <AvatarFallback>{post.user.displayName.charAt(0)}</AvatarFallback>
-            </Avatar>
-          ) : post.character ? (
-            <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
-              <AvatarImage src={post.character.image} alt={post.character.name} />
-              <AvatarFallback>{post.character.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-          ) : null}
-  
-          <div className="flex-1">
-            <div className="flex items-center">
-              {/* Name Clickable */}
-              {post.user ? (
-                <>
-                  <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
-                    {post.user.displayName}
-                  </span>
-                  <span
-                    className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
-                    onClick={handleProfileClick}
-                  >
-                    @{post.user.displayName}
-                  </span>
-                </>
-              ) : post.character ? (
-                <>
-                  <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
-                    {post.character.name}
-                  </span>
-                  <span
-                    className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
-                    onClick={handleProfileClick}
-                  >
-                    @{post.character.username}
-                  </span>
-                </>
-              ) : null}
-  
-              <span className="text-gray-500 mx-2">·</span>
-              <span className="text-gray-500">{formatDay(post.day)}</span>
+  const router = useRouter();
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent post click event
+
+    if (post.creator) {
+      const query = new URLSearchParams({
+        name: post.creator.name || "",
+        image: post.creator.image || ""
+      }).toString();
+      router.push(`/game/${post.gameId}/profile/${post.creator.username}?${query}`);
+    }
+  };
+
+  return (
+    <Card className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors cursor-pointer">
+      <div className="flex items-start space-x-3">
+        {/* Avatar Clickable */}
+        <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
+          <AvatarImage src={post.creator.image} alt={post.creator.name} />
+          <AvatarFallback>{post.creator.name.charAt(0)}</AvatarFallback>
+        </Avatar>
+
+        <div className="flex-1">
+          <div className="flex items-center">
+            <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
+              {post.creator.name}
+            </span>
+            <span
+              className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
+              onClick={handleProfileClick}
+            >
+              @{post.creator.username}
+            </span>
+
+            <span className="text-gray-500 mx-2">·</span>
+            <span className="text-gray-500">{formatDay(post.day)}</span>
+          </div>
+
+          <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
+
+          {post.image && (
+            <div className="mt-3 rounded-xl overflow-hidden">
+              <Image
+                src={post.image}
+                alt="Post image"
+                width={500}
+                height={300}
+                className="w-full object-cover rounded-xl"
+              />
             </div>
-  
-            <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
-  
-            {post.image && (
-              <div className="mt-3 rounded-xl overflow-hidden">
-                <Image
-                  src={post.image}
-                  alt="Post image"
-                  width={500}
-                  height={300}
-                  className="w-full object-cover rounded-xl"
-                />
-              </div>
-            )}
-  
-            <div className="flex mt-3 text-gray-500">
-              <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-                <Heart className="h-4 w-4" />
-                <span>{post.numLikes}</span>
-              </Button>
-            </div>
+          )}
+
+          <div className="flex mt-3 text-gray-500">
+            <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+              <Heart className="h-4 w-4" />
+              <span>{post.numLikes}</span>
+            </Button>
           </div>
         </div>
-      </Card>
-    );
-  };
-  
-  
+      </div>
+    </Card>
+  );
+};
 
 interface NewPostFormProps {
-    onClose?: () => void;
-    gameId: string;
-    day: number;
+  onClose?: () => void;
+  gameId: string;
+  day: number;
 }
 
 const NewPostForm = ({ onClose, gameId, day }: NewPostFormProps) => {
@@ -176,17 +150,17 @@ const NewPostForm = ({ onClose, gameId, day }: NewPostFormProps) => {
       console.error("Post cannot be empty.");
       return;
     }
-  
+
     try {
-        await axios.post("/post", {
-            gameId: gameId,
-            day: day,
-            text: text,
-            image: image
-        });
-  
+      await axios.post("/post", {
+        gameId: gameId,
+        day: day,
+        text: text,
+        image: image
+      });
+
       console.log("Post submitted successfully:");
-  
+
       // Clear input fields
       setText("");
       setImage(null);
@@ -195,7 +169,6 @@ const NewPostForm = ({ onClose, gameId, day }: NewPostFormProps) => {
       console.error("Error submitting post:", error);
     }
   };
-  
 
   const handleImageUpload = () => {
     fileInputRef.current?.click(); // Open file picker
@@ -263,23 +236,23 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth()
+  const { user } = useAuth();
 
-  const [dayFilter, setDayFilter] = useState<DayType | null>(null)
+  const [dayFilter, setDayFilter] = useState<number | null>(null);
 
   // Filter posts based on selected day
-  const filteredPosts = dayFilter !== null ? posts.filter((post) => post.day === dayFilter) : posts
+  const filteredPosts = dayFilter !== null ? posts.filter((post) => post.day === dayFilter) : posts;
 
   // State for the visible day in the carousel
-  const [visibleDay, setVisibleDay] = useState<number>(0)
+  const [visibleDay, setVisibleDay] = useState<number>(0);
 
   const navigate = (direction: "prev" | "next") => {
     if (direction === "prev") {
-      setVisibleDay((prev) => (prev > 0 ? prev - 1 : 6))
+      setVisibleDay((prev) => (prev > 0 ? prev - 1 : 6));
     } else {
-      setVisibleDay((prev) => (prev < 6 ? prev + 1 : 0))
+      setVisibleDay((prev) => (prev < 6 ? prev + 1 : 0));
     }
-  }
+  };
 
   useEffect(() => {
     if (!id || !user) return;
@@ -334,12 +307,9 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       </div>
       <ScrollArea className="h-[calc(100vh-80px)]">
         <div className="max-w-xl mx-auto">
-            <div className="p-4 border-b bg-white">
-                <NewPostForm 
-                    gameId={id} 
-                    day={game?.day ?? 0} 
-                />
-            </div>
+          <div className="p-4 border-b bg-white">
+            <NewPostForm gameId={id} day={game?.day ?? 0} />
+          </div>
           <div className="p-4">
             {filteredPosts.map((post) => (
               <PostItem key={post.id} post={post} />
@@ -349,34 +319,34 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       </ScrollArea>
 
       <div className="fixed bottom-4 left-4">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={() => navigate("prev")} className="h-8 w-8">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-
-        <div className="flex gap-2">
-          <Button
-            variant={dayFilter === null ? "default" : "outline"}
-            onClick={() => setDayFilter(null)}
-            className="min-w-[60px]"
-          >
-            All
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => navigate("prev")} className="h-8 w-8">
+            <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          <Button
-            variant={dayFilter === (visibleDay as DayType) ? "default" : "outline"}
-            onClick={() => setDayFilter(visibleDay as DayType)}
-            className="min-w-[40px] whitespace-nowrap"
-          >
-            {visibleDay}
+          <div className="flex gap-2">
+            <Button
+              variant={dayFilter === null ? "default" : "outline"}
+              onClick={() => setDayFilter(null)}
+              className="min-w-[60px]"
+            >
+              All
+            </Button>
+
+            <Button
+              variant={dayFilter === visibleDay ? "default" : "outline"}
+              onClick={() => setDayFilter(visibleDay)}
+              className="min-w-[40px] whitespace-nowrap"
+            >
+              {visibleDay}
+            </Button>
+          </div>
+
+          <Button variant="ghost" size="icon" onClick={() => navigate("next")} className="h-8 w-8">
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-
-        <Button variant="ghost" size="icon" onClick={() => navigate("next")} className="h-8 w-8">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
       </div>
-        </div>
 
       <div className="fixed bottom-4 right-4">
         <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -384,12 +354,8 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
             <Button onClick={() => setShowModal(true)}>New Post</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
-            <NewPostForm 
-                onClose={() => setShowModal(false)} 
-                gameId={id} 
-                day={game?.day ?? 0} 
-            />
-        </DialogContent>    
+            <NewPostForm onClose={() => setShowModal(false)} gameId={id} day={game?.day ?? 0} />
+          </DialogContent>
         </Dialog>
       </div>
     </div>

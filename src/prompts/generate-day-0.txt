@@ -13,7 +13,7 @@ Your response MUST follow this exact structure with proper XML tags to allow for
   {
     "name": "Character's full name",
     "username": "social_media_handle",
-    "description": "Detailed personality description including profession, interests, and attitude"
+    "description": "Brief description of personality, profession, and interests (2-3 sentences)"
   },
   {...},
   ...
@@ -24,8 +24,8 @@ Your response MUST follow this exact structure with proper XML tags to allow for
 [
   {
     "username": "character_username",
-    "content": "Post content including @{{company.username}} mention",
-    "likes: "Number of estimated like that this post will get with in these scenario and community."
+    "content": "Post content with proper mention format: ' @{{company.username}} ' (space before and after)",
+    "likes": number
   },
   {...},
   ...
@@ -33,49 +33,60 @@ Your response MUST follow this exact structure with proper XML tags to allow for
 </posts>
 
 # Character Generation
-Generate a diverse cast of 10 fictional characters who will participate in this social media simulation. Each character should have a unique personality, background, and relationship to the company's product or service.
+Generate a diverse cast of 10 fictional characters who MUST be deeply embedded within the exact scenario theme. Each character should feel like they naturally belong in the specific world described in the scenario.
 
-IMPORTANT: Characters MUST be deeply integrated with the scenario theme. For example, if the scenario is "A midnight city with criminals hiding," characters should include nocturnal personalities, reformed criminals, vigilantes, night shift workers, underground artists, etc.
+CRITICAL: Characters must be scenario-specific, NOT generic. For example:
+- If the scenario is "Hogwarts School of Witchcraft and Wizardry," characters should be professors, students, house elves, magical creatures, Hogsmeade shop owners, etc.
+- If the scenario is "Night City cyberpunk world," characters should be netrunners, corporate agents, street gangs, ripperdocs, mercenaries, fixers, etc.
+- If the scenario is "Medieval fantasy kingdom," characters should be knights, court magicians, village healers, traveling bards, blacksmiths, etc.
 
 IMPORTANT RULES FOR CHARACTERS:
 1. Character names MUST NOT contain any special characters (including quotes, apostrophes, or symbols) to avoid JSON parsing errors
-2. Create a balanced distribution of attitudes toward the company:
-   - 3 characters who are enthusiastic supporters/fans of the company
-   - 3 characters who are strongly skeptical or critical of the company
-   - 4 characters who are neutral or undecided about the company
+2. Create a balanced distribution of characters (though DO NOT explicitly state their attitudes in descriptions):
+   - 3 characters who will appear supportive of the company
+   - 3 characters who will appear skeptical or critical
+   - 4 characters who will appear neutral or undecided
 
-3. Include diverse fictional backgrounds that specifically relate to the scenario theme:
-   - Characters with unusual or extraordinary professions relevant to the scenario
-   - Characters with mysterious backgrounds or hidden identities
-   - Characters with special skills or knowledge related to the scenario
-   - Characters with curious or unusual relationships to the company
+3. Ensure EVERY character has a direct connection to the scenario world:
+   - Give them professions, backgrounds, and motivations that ONLY make sense within the scenario theme
+   - Avoid generic traits that could fit in any scenario (like "tech enthusiast" or "marketing expert")
+   - Create characters who would naturally interact with the specific company in this specific scenario
+   - Characters should use terminology, slang, and references unique to the scenario world
 
-4. Make characters colorful and memorable with:
-   - Quirky habits or distinctive speech patterns
-   - Unusual motivations or obsessions
-   - Compelling backstories that tie to the scenario
-   - Distinctive personality traits that stand out
+4. Make characters feel like authentic inhabitants of the scenario world:
+   - Give them knowledge only someone in that world would have
+   - Reference locations, events, or other elements specific to the scenario
+   - Create relationships between characters that reflect the social dynamics of the scenario world
+   - Ensure their motivations align with what would be important in that specific world
 
 For each character, provide:
 - Name (fictional but plausible, NO special characters)
-- Username (creative and fitting their personality)
-- Description (unique background, personality traits, interests, and specific attitude toward the company that ties into the scenario theme)
+- Username (creative, fitting their personality, and reflecting the scenario theme)
+- Description (concise 2-3 sentence personality summary that places them firmly within the scenario world)
 
 # Initial Social Media Posts
-Generate 10-15 social media posts from these characters that reflect the initial state of the company and scenario. These posts should show organic reactions to the company's presence, products, or announcements.
+Generate 10-15 social media posts from these characters that reflect the initial state of the company and scenario. These posts should show organic reactions to the company's presence, products, or announcements within the context of the scenario world.
 
 The posts should:
-- Be distinctive and reflect the fictional world of the scenario
-- Include elements that specifically tie to the scenario theme (e.g., mentions of the midnight city atmosphere, nightlife references, etc.)
-- Include relevant hashtags where appropriate
-- Reference specific aspects of the company or its products
-- Include @ mentions of the company using its username
-- Reflect the character's unique personality and perspective
+- Contain specific references to the scenario world (locations, terminology, events)
+- Use language, slang, and communication styles authentic to the scenario
+- Include relevant hashtags appropriate to the scenario's culture
+- Reference specific aspects of the company or its products in ways that make sense in the scenario
+- Properly format mentions with spaces: " @username " (space before and after the @ mention)
+- Allow characters to interact with and mention each other in context-appropriate ways
+- Reflect each character's unique perspective based on their position in the scenario world
 - Vary in length and style as real social media posts do
-- Maintain consistency with each character's established attitude (positive, negative, or neutral)
+- Implicitly show the character's attitude (positive, negative, or neutral) through content rather than stating it directly
 
-Make the simulation feel like a living ecosystem of voices with different opinions, interests, and communication styles. Create narrative tension and interesting dynamics between the characters that will allow for story development over the 7-day simulation.
+Example of correct mention format:
+"Love what you're doing over at @company_name! Can't wait to see more."
+"Hey @other_username, have you checked out what @company_name is offering?"
 
-Make sure each character's reaction is appropriate to their personality and realistic for someone with their background. Consider how different fictional characters might respond to this company based on their needs, values, and experiences within the scenario's world.
+Example of incorrect mention format:
+"Love what you're doing @company_name's products!" (no apostrophe after username)
+"Check out@company_name today!" (missing space before @)
+"@company_name: this is interesting" (no colon after username)
+
+Make the simulation feel like a living ecosystem of voices with different opinions, interests, and communication styles that could only exist in this specific scenario world. Create narrative tension and interesting dynamics between the characters that will allow for story development over the 7-day simulation.
 
 IMPORTANT: Ensure your response uses valid JSON syntax within the XML tags and follows the exact structure specified above. Double-check that character names do not contain any quotes or special characters that could break the JSON format.

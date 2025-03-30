@@ -92,6 +92,10 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
     createdAt: new Date()
   };
 
+  console.log("Game:", game);
+
+  console.log("Posts:", postsList);
+
   // Save the game to Firestore
   await gameRef.set(game);
   return game;

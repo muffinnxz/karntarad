@@ -11,14 +11,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Heart, ImageIcon, X, Send, ArrowLeft, ChevronLeft, ChevronRight, Loader, User } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
-import { Post } from "@/interfaces/Post";
-import { Game } from "@/interfaces/Game";
-import { Character } from "@/interfaces/Character";
+import type { Post } from "@/interfaces/Post";
+import type { Game } from "@/interfaces/Game";
+import type { Character } from "@/interfaces/Character";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from "@/lib/axios";
 
-// Function to format text with @ and # highlighting
+// Format text with @ and # highlighting
 const formatText = (id: string, text: string) => {
   const words = text.split(" ");
   return words.map((word, index) => {
@@ -84,7 +83,6 @@ const PostItem = ({ post }: { post: Post }) => {
           <AvatarImage src={post.creator.image} alt={post.creator.name} />
           <AvatarFallback>{post.creator.name.charAt(0)}</AvatarFallback>
         </Avatar>
-
         <div className="flex-1">
           <div className="flex items-center">
             <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
@@ -99,13 +97,11 @@ const PostItem = ({ post }: { post: Post }) => {
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
           </div>
-
           <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
-
           {post.image && (
             <div className="mt-3 rounded-xl overflow-hidden">
               <Image
-                src={post.image}
+                src={post.image || "/placeholder.svg"}
                 alt="Post image"
                 width={500}
                 height={300}
@@ -113,7 +109,6 @@ const PostItem = ({ post }: { post: Post }) => {
               />
             </div>
           )}
-
           <div className="flex mt-3 text-gray-500">
             <Button variant="ghost" size="sm" className="flex items-center space-x-1">
               <Heart className="h-4 w-4" />
@@ -139,20 +134,21 @@ const NewPostForm = ({ onClose, gameId, day, taggableUsers }: NewPostFormProps) 
   const [loading, setLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // States for mention suggestions
+  // Use suggestions state as Character[]
   const [suggestions, setSuggestions] = useState<Character[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setText(newText);
-
     const words = newText.split(/\s+/);
     const lastWord = words[words.length - 1];
     if (lastWord.startsWith("@")) {
       const query = lastWord.substring(1);
       if (taggableUsers && query.length > 0) {
-        const filtered = taggableUsers.filter((user) => user.username?.toLowerCase().includes(query.toLowerCase()));
+        const filtered = taggableUsers.filter(
+          (user) => user.username && user.username.toLowerCase().includes(query.toLowerCase())
+        );
         setSuggestions(filtered);
         setShowSuggestions(true);
       } else {
@@ -165,7 +161,6 @@ const NewPostForm = ({ onClose, gameId, day, taggableUsers }: NewPostFormProps) 
 
   const handleSuggestionClick = (user: Character) => {
     const words = text.split(/\s+/);
-    // Replace the last word with the selected username (insert only the username)
     words[words.length - 1] = "@" + user.username;
     const newText = words.join(" ") + " ";
     setText(newText);
@@ -177,15 +172,9 @@ const NewPostForm = ({ onClose, gameId, day, taggableUsers }: NewPostFormProps) 
       console.error("Post cannot be empty.");
       return;
     }
-
     setLoading(true);
     try {
-      const response = await axios.post("/post", {
-        gameId,
-        day,
-        text,
-        image
-      });
+      const response = await axios.post("/post", { gameId, day, text, image });
       console.log("Post submitted successfully:", response.data);
       setText("");
       setImage(null);
@@ -218,7 +207,6 @@ const NewPostForm = ({ onClose, gameId, day, taggableUsers }: NewPostFormProps) 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">New Post</h2>
       </div>
-
       <div className="relative">
         <Textarea
           placeholder="What's happening?"
@@ -228,33 +216,45 @@ const NewPostForm = ({ onClose, gameId, day, taggableUsers }: NewPostFormProps) 
           disabled={loading}
         />
         {showSuggestions && suggestions.length > 0 && (
-          <Command className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow">
-            <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup>
-                {suggestions.map((user) => (
-                  <CommandItem key={user.username} onSelect={() => handleSuggestionClick(user)}>
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name} />
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{user.name}</span>
-                        <span className="text-sm text-gray-500">@{user.username}</span>
-                      </div>
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
+          <div className="absolute z-10 mt-1 w-full rounded-lg border bg-white shadow-lg">
+            <div className="sticky top-0 bg-gray-50 px-4 py-2 border-b">
+              <p className="text-sm font-medium text-gray-500">Suggestions</p>
+            </div>
+            {suggestions.map((user) => (
+              <div
+                key={user.username}
+                className="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 last:border-b-0"
+                onClick={() => handleSuggestionClick(user)}
+              >
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-8 w-8 ring-2 ring-offset-2 ring-gray-100">
+                    <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name} />
+                    <AvatarFallback className="bg-blue-100 text-blue-800">{user.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-900">{user.name}</span>
+                    <span className="text-sm text-gray-500">@{user.username}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {suggestions.length > 5 && (
+              <div className="sticky bottom-0 bg-gray-50 px-4 py-2 text-center text-xs text-gray-500 border-t">
+                {suggestions.length} results found
+              </div>
+            )}
+          </div>
         )}
       </div>
-
       {image && (
         <div className="relative mb-4">
-          <Image src={image} alt="Uploaded image" width={256} height={256} className="rounded-lg" />
+          <Image
+            src={image || "/placeholder.svg"}
+            alt="Uploaded image"
+            width={256}
+            height={256}
+            className="rounded-lg"
+          />
           <Button
             variant="destructive"
             size="sm"
@@ -266,9 +266,7 @@ const NewPostForm = ({ onClose, gameId, day, taggableUsers }: NewPostFormProps) 
           </Button>
         </div>
       )}
-
       <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-
       <div className="flex justify-between items-center">
         <Button variant="ghost" size="sm" onClick={handleImageUpload} disabled={!!image || loading}>
           <ImageIcon className="h-4 w-4 mr-2" />

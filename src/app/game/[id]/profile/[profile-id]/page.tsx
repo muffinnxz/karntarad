@@ -27,10 +27,8 @@ const formatText = (id: string, text: string) => {
       );
     } else if (word.startsWith("#")) {
       return (
-        <span key={index}>
-          <Link href={`/hashtag/${word.substring(1)}`} className="text-blue-500 hover:underline">
-            {word}
-          </Link>{" "}
+        <span key={index} className="text-blue-500">
+          {word}
         </span>
       );
     } else {

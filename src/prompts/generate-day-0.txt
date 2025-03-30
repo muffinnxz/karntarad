@@ -12,8 +12,8 @@ Your response MUST follow this exact structure with proper XML tags to allow for
 [
   {
     "name": "Character's full name",
-    "username": "social_media_handle",
-    "description": "Brief description of personality, profession, and interests (2-3 sentences)"
+    "username": "social_media_handle only in lowercase",
+    "description": "Brief description of personality, profession, and interests (1-2 sentences)"
   },
   {...},
   ...
@@ -23,9 +23,10 @@ Your response MUST follow this exact structure with proper XML tags to allow for
 <posts>
 [
   {
-    "username": "character_username",
+    "username": "Character's social_media_handle only in lowercase",
     "content": "Post content with proper mention format: ' @{{company.username}} ' (space before and after)",
-    "likes": number
+    "likes": number,
+    "sentiment": "positive|neutral|negative"
   },
   {...},
   ...
@@ -67,6 +68,12 @@ For each character, provide:
 # Initial Social Media Posts
 Generate 10-15 social media posts from these characters that reflect the initial state of the company and scenario. These posts should show organic reactions to the company's presence, products, or announcements within the context of the scenario world.
 
+Each post MUST include:
+- Username: The character's social media handle
+- Content: The post's text content
+- Likes: A realistic number of likes (0-100)
+- Sentiment: The character's current attitude toward the company: "positive", "neutral", or "negative"
+
 The posts should:
 - Contain specific references to the scenario world (locations, terminology, events)
 - Use language, slang, and communication styles authentic to the scenario
@@ -77,6 +84,7 @@ The posts should:
 - Reflect each character's unique perspective based on their position in the scenario world
 - Vary in length and style as real social media posts do
 - Implicitly show the character's attitude (positive, negative, or neutral) through content rather than stating it directly
+- Have the appropriate sentiment value that matches the content of the post
 
 Example of correct mention format:
 "Love what you're doing over at @company_name! Can't wait to see more."

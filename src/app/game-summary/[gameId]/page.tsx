@@ -109,21 +109,21 @@ const formatText = (id: string, text: string) => {
 const formatDay = (day: number) => {
   switch (day) {
     case 0:
-      return "day 0 - Monday";
+      return "Day 0 - Monday";
     case 1:
-      return "day 1 - Tuesday";
+      return "Day 1 - Tuesday";
     case 2:
-      return "day 2 - Wednesday";
+      return "Day 2 - Wednesday";
     case 3:
-      return "day 3 - Thursday";
+      return "Day 3 - Thursday";
     case 4:
-      return "day 4 - Friday";
+      return "Day 4 - Friday";
     case 5:
-      return "day 5 - Saturday";
+      return "Day 5 - Saturday";
     case 6:
-      return "day 6 - Sunday";
+      return "Day 6 - Sunday";
     default:
-      return `day ${day} - Invalid day`;
+      return `Day ${day} - Invalid day`;
   }
 };
 

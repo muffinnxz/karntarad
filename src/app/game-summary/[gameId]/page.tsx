@@ -438,7 +438,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
             growth={calculateGrowth(10000, gameData.followerCount)}
             percentage={true}
           />
-          <MetricCard icon={<ThumbsUp className="h-6 w-6" />} title="Total Likes" end={totalLikes} className="h-full" />
+          <MetricCard icon={<ThumbsUp className="h-6 w-6" />} title="Total Likes" end={totalLikes} />
         </div>
 
         <StatsBox

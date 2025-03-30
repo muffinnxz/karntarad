@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     const newPost: Post = {
       id: newDocRef.id,
       gameId,
-      day,
+      day: day + 1,
       creator: {
         name: game.company.name,
         username: game.company.username,
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
       .replace(/{{characters}}/g, JSON.stringify(characters, null, 2))
       .replace(/{{post_history}}/g, JSON.stringify(filteredPreviousPosts, null, 2))
       .replace(/{{user_post}}/g, JSON.stringify({ text: postText, image: imageUrl }, null, 2))
-      .replace(/{{current_day}}/g, JSON.stringify(day, null, 2));
+      .replace(/{{current_day}}/g, JSON.stringify(day + 1, null, 2));
 
     console.log("Final character prompt to AI:", finalPrompt);
 

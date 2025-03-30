@@ -12,7 +12,7 @@ Your response MUST follow this exact structure with proper XML tags to allow for
 [
   {
     "name": "Character's full name",
-    "username": "social_media_handle",
+    "username": "social_media_handle only in lowercase",
     "description": "Brief description of personality, profession, and interests (1-2 sentences)"
   },
   {...},
@@ -23,7 +23,7 @@ Your response MUST follow this exact structure with proper XML tags to allow for
 <posts>
 [
   {
-    "username": "character_username",
+    "username": "Character's social_media_handle only in lowercase",
     "content": "Post content with proper mention format: ' @{{company.username}} ' (space before and after)",
     "likes": number,
     "sentiment": "positive|neutral|negative"

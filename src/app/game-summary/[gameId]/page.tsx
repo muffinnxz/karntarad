@@ -14,6 +14,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CartesianGrid, LabelList, Line, LineChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 import { BarChart, Bar, Tooltip, Legend } from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { useRouter } from "next/navigation";
 
 interface DailyLikes {
   day: number;
@@ -133,9 +135,9 @@ function MetricCard({ icon, title, start, end, growth }: MetricCardProps) {
   );
 }
 
+// Format text with @ and # highlighting
 const formatText = (id: string, text: string) => {
   const words = text.split(" ");
-
   return words.map((word, index) => {
     if (word.startsWith("@")) {
       return (
@@ -146,16 +148,12 @@ const formatText = (id: string, text: string) => {
         </span>
       );
     } else if (word.startsWith("#")) {
-      // Handle hashtags
       return (
         <span key={index}>
-          <Link href={`/hashtag/${word.substring(1)}`} className="text-blue-500 hover:underline">
-            {word}
-          </Link>{" "}
+          <div className="text-blue-500">{word}</div>{" "}
         </span>
       );
     } else {
-      // Regular text
       return <span key={index}>{word} </span>;
     }
   });
@@ -164,42 +162,95 @@ const formatText = (id: string, text: string) => {
 const formatDay = (day: number) => {
   switch (day) {
     case 0:
-      return "day 0 - Monday";
+      return "Day 0 - Sunday";
     case 1:
-      return "day 1 - Tuesday";
+      return "Day 1 - Monday";
     case 2:
-      return "day 2 - Wednesday";
+      return "Day 2 - Tuesday";
     case 3:
-      return "day 3 - Thursday";
+      return "Day 3 - Wednesday";
     case 4:
-      return "day 4 - Friday";
+      return "Day 4 - Thursday";
     case 5:
-      return "day 5 - Saturday";
+      return "Day 5 - Friday";
     case 6:
-      return "day 6 - Sunday";
+      return "Day 6 - Saturday";
+    case 7:
+      return "Day 7 - Sunday";
     default:
-      return `day ${day} - Invalid day`;
+      return `Day ${day} - Invalid day`;
   }
 };
 
 const PostItem = ({ post }: { post: Post }) => {
+  const router = useRouter();
+
+  // Local state to track like status and like count
+  const [isLiked, setIsLiked] = useState<boolean>(post.isLikeByUser || false);
+  const [likes, setLikes] = useState<number>(post.numLikes);
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (post.creator) {
+      const query = new URLSearchParams({
+        name: post.creator.name || "",
+        image: post.creator.image || ""
+      }).toString();
+      router.push(`/game/${post.gameId}/profile/${post.creator.username}?${query}`);
+    }
+  };
+
+  // Handler for toggling like status
+  const handleLikeToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering parent click events
+    try {
+      const response = await axios.post("/post/like", { postId: post.id });
+      if (response.status === 200) {
+        const data = response.data;
+        setIsLiked(data.isLikeByUser);
+        setLikes(data.numLikes);
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
+    }
+  };
+
   return (
-    <Card className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors">
+    <Card className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors cursor-pointer">
       <div className="flex items-start space-x-3">
-        <Avatar className="h-10 w-10">
+        <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
           <AvatarImage src={post.creator.image} alt={post.creator.name} />
           <AvatarFallback>{post.creator.name.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center">
-            <span className="font-semibold">{post.creator.name}</span>
-            <span className="text-gray-500 ml-2">@{post.creator.username}</span>
+            <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
+              {post.creator.name}
+            </span>
+            <span
+              className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
+              onClick={handleProfileClick}
+            >
+              @{post.creator.username}
+            </span>
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
+            {post.sentiment && (
+              <Badge
+                variant="outline"
+                className={`ml-2 text-xs px-1.5 py-0 ${
+                  post.sentiment === "positive"
+                    ? "bg-green-100 text-green-800 border-green-300"
+                    : post.sentiment === "neutral"
+                    ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                    : "bg-red-100 text-red-800 border-red-300"
+                }`}
+              >
+                {post.sentiment}
+              </Badge>
+            )}
           </div>
-
           <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
-
           {post.image && (
             <div className="mt-3 rounded-xl overflow-hidden">
               <Image
@@ -211,11 +262,10 @@ const PostItem = ({ post }: { post: Post }) => {
               />
             </div>
           )}
-
           <div className="flex mt-3 text-gray-500">
-            <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-              <Heart className="h-4 w-4" />
-              <span>{post.numLikes}</span>
+            <Button variant="ghost" size="sm" className="flex items-center space-x-1" onClick={handleLikeToggle}>
+              <Heart className={`h-4 w-4 ${isLiked ? "text-red-500" : ""}`} />
+              <span>{likes}</span>
             </Button>
           </div>
         </div>
@@ -309,7 +359,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
           const botPosts = posts.filter((post: Post) => post.creator.username !== gameData.company?.username);
 
           // Calculate daily likes
-          const dailyLikes: DailyLikes[] = Array.from({ length: 7 }, (_, i) => ({
+          const dailyLikes: DailyLikes[] = Array.from({ length: 8 }, (_, i) => ({
             day: i,
             likes: userPosts
               .filter((post: Post) => post.day === i)
@@ -317,7 +367,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
           }));
 
           // Calculate sentiment data for each day
-          const sentimentByDay: SentimentData[] = Array.from({ length: 7 }, (_, day) => {
+          const sentimentByDay: SentimentData[] = Array.from({ length: 8 }, (_, day) => {
             const dayPosts = botPosts.filter((post: Post) => post.day === day);
             return {
               day,
@@ -346,7 +396,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
 
   useEffect(() => {
     if (userPosts.length > 0) {
-      setFilteredPosts(userPosts.sort((a, b) => b.numLikes - a.numLikes).slice(0, 3));
+      setFilteredPosts(userPosts.sort((a, b) => b.numLikes - a.numLikes).slice(0, 4));
     }
   }, [userPosts]);
 
@@ -453,7 +503,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
       </div>
 
       <h2 className="text-2xl font-semibold mb-4">Top Performing Posts</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
         {filteredPosts.map((post) => (
           <PostItem key={post.id} post={post} />
         ))}

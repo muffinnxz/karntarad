@@ -13,7 +13,7 @@ Your response MUST follow this exact structure with proper XML tags to allow for
   {
     "name": "Character's full name",
     "username": "social_media_handle",
-    "description": "Brief description of personality, profession, and interests (2-3 sentences)"
+    "description": "Brief description of personality, profession, and interests (1-2 sentences)"
   },
   {...},
   ...

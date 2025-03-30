@@ -94,50 +94,52 @@ export async function POST(req: NextRequest) {
 
     // 3. bots create posts
 
-    const companyDescription = game.company.description;
-    const scenarioDescription = game.scenario.description;
-    const companyUsername = game.company.username;
-    // Query all previous posts for this game
-    const postsSnapshot = await firestore.collection("posts").where("gameId", "==", gameId).get();
-    const allPreviousPost = postsSnapshot.docs.map((doc) => doc.data());
+    // Read the generate-next-day prompt template
+    const generateNextDayFile = path.join(process.cwd(), "src/prompts/generate-next-day.txt");
+    const generateNextDayContent = fs.readFileSync(generateNextDayFile, "utf8");
 
-    console.log("Company Description:", companyDescription);
-    console.log("Scenario Description:", scenarioDescription);
-    console.log("Company Username:", companyUsername);
-    console.log("All previous posts:", allPreviousPost);
+    const company = {
+      name: game.company.name,
+      description: game.company.description,
+      username: game.company.username
+    };
 
-    // Read the character-create-post prompt template
-    const characterCreatePostFile = path.join(process.cwd(), "src/prompts/character-create-post.txt");
-    const characterCreatePostContent = fs.readFileSync(characterCreatePostFile, "utf8");
+    const scenario = {
+      name: game.scenario.name,
+      description: game.scenario.description
+    };
 
-    const characterListStr = JSON.stringify(game.characterList, null, 2);
+    const characters = game.characterList;
     const postText = text;
 
-    const filteredPreviousPosts = postsSnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        // Use "user" if available, otherwise "character" as the creator
-        creator: data.creator,
-        text: data.text,
-        numLikes: data.numLikes,
-        image: data.image, // this field is optional
-      };
-    });
-    
+    const postsSnapshot = await firestore.collection("posts").where("gameId", "==", gameId).get();
+    const filteredPreviousPosts = postsSnapshot.docs
+      .map((doc) => {
+        const data = doc.data();
+        return {
+          creator: {
+            username: data.creator.username
+          },
+          text: data.text,
+          numLikes: data.numLikes,
+          image: data.image,
+          day: data.day
+        };
+      })
+      .sort((a, b) => a.day - b.day);
+
     console.log("Filtered previous posts:", filteredPreviousPosts);
-    const allPreviousPostStr = JSON.stringify(filteredPreviousPosts, null, 2);
-    console.log("All previous posts string:", allPreviousPostStr);
 
-    // Replace the placeholders in the template using regex
-    const finalCharacterPrompt = characterCreatePostContent
-      .replace(/{{characterListStr}}/g, characterListStr)
-      .replace(/{{postText}}/g, postText)
-      .replace(/{{companyDescription}}/g, companyDescription)
-      .replace(/{{scenarioDescription}}/g, scenarioDescription)
-      .replace(/{{allPreviousPost}}/g, allPreviousPostStr)
-      .replace(/{{companyUsername}}/g, companyUsername);
+    // Replace the placeholders in the template
+    const finalPrompt = generateNextDayContent
+      .replace(/{{company}}/g, JSON.stringify(company, null, 2))
+      .replace(/{{scenario}}/g, JSON.stringify(scenario, null, 2))
+      .replace(/{{characters}}/g, JSON.stringify(characters, null, 2))
+      .replace(/{{post_history}}/g, JSON.stringify(filteredPreviousPosts, null, 2))
+      .replace(/{{user_post}}/g, JSON.stringify({ text: postText, image: imageUrl }, null, 2))
+      .replace(/{{current_day}}/g, JSON.stringify(day, null, 2));
 
-    console.log("Final character prompt to AI:", finalCharacterPrompt);
+    console.log("Final character prompt to AI:", finalPrompt);
 
     // Together API call for generating character posts
     const togetherForCharacterPosts = new Together({
@@ -149,11 +151,11 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           role: "user",
-          content: finalCharacterPrompt
+          content: finalPrompt
         }
       ],
       temperature: 0.7,
-      max_tokens: 1024,
+      max_tokens: 2048,
       response_format: { type: "json_object" }
     });
 
@@ -175,7 +177,7 @@ export async function POST(req: NextRequest) {
       cleanedOutput = cleanedOutput.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
     }
 
-    let aiPosts: Array<{ username: string; content: string; likes: number }> = [];
+    let aiPosts: Array<{ username: string; content: string; likes: number; sentiment: string }> = [];
     try {
       aiPosts = JSON.parse(cleanedOutput);
     } catch (err) {
@@ -194,7 +196,7 @@ export async function POST(req: NextRequest) {
 
     console.log("Character map:", characterMap);
 
-    const createPost = async (v: { username: string; content: string; likes: number }) => {
+    const createPost = async (v: { username: string; content: string; likes: number; sentiment: string }) => {
       const postRef = firestore.collection("posts").doc();
 
       const character = characterMap.get(v.username);
@@ -209,7 +211,8 @@ export async function POST(req: NextRequest) {
           image: character?.image || ""
         },
         text: v.content,
-        numLikes: v.likes || 0
+        numLikes: v.likes || 0,
+        sentiment: v.sentiment
       });
     };
 

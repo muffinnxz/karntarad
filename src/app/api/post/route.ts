@@ -109,6 +109,7 @@ export async function POST(req: NextRequest) {
       description: game.scenario.description
     };
 
+    const characters = game.characterList;
     let postText = text;
 
     try {
@@ -138,7 +139,7 @@ export async function POST(req: NextRequest) {
 
         const imageCaption = imageCaptionResponse?.choices[0]?.message?.content;
 
-        postText += `\nThe attached image is also described as: ${imageCaption}`;
+        postText += `\n\nThe attached image is also described as: ${imageCaption}`;
       }
     } catch (error) {
       console.error("Error generating image caption:", error);
@@ -146,8 +147,6 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("Post text with image caption (if there is):", postText);
-
-    const characters = game.characterList;
 
     const postsSnapshot = await firestore.collection("posts").where("gameId", "==", gameId).get();
     const filteredPreviousPosts = postsSnapshot.docs
@@ -160,7 +159,8 @@ export async function POST(req: NextRequest) {
           text: data.text,
           numLikes: data.numLikes,
           image: data.image,
-          day: data.day
+          day: data.day,
+          sentiment: data.sentiment
         };
       })
       .sort((a, b) => a.day - b.day);

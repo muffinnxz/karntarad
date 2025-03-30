@@ -299,7 +299,7 @@ export default function CompanySelector({ selectedCompany, onCompanySelect }: Co
       </DialogTrigger>
 
       {/* Dialog Content */}
-      <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />

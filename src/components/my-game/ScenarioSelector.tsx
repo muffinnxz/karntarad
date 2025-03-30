@@ -219,7 +219,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
       </DialogTrigger>
 
       {/* Dialog Content */}
-      <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
@@ -247,7 +247,7 @@ export default function ScenarioSelector({ selectedScenario, onScenarioSelect }:
           </TabsList>
 
           {/* My Scenarios Tab */}
-          <TabsContent value="my-scenarios" className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <TabsContent value="my-scenarios" className="flex-1 overflow-y-auto flex flex-col min-h-0">
             {isLoadingScenarios ? (
               <div className="flex flex-col items-center justify-center h-full py-8 text-center">
                 <p className="text-lg">Loading your scenarios...</p>

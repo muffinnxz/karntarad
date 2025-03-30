@@ -129,12 +129,7 @@ const PostItem = ({ post }: { post: Post }) => {
             </div>
           )}
           <div className="flex mt-3 text-gray-500">
-          <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center space-x-1"
-              onClick={handleLikeToggle}
-            >
+            <Button variant="ghost" size="sm" className="flex items-center space-x-1" onClick={handleLikeToggle}>
               <Heart className={`h-4 w-4 ${isLiked ? "text-red-500" : ""}`} />
               <span>{likes}</span>
             </Button>
@@ -411,9 +406,11 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       </div>
       <ScrollArea className="h-[calc(100vh-80px)]">
         <div className="max-w-xl mx-auto">
-          <div className="p-4 border-b bg-white">
-            <NewPostForm gameId={id} day={game?.day ?? 0} taggableUsers={game?.characterList} />
-          </div>
+          {game?.status === "in_progress" && (
+            <div className="p-4 border-b bg-white">
+              <NewPostForm gameId={id} day={game?.day ?? 0} taggableUsers={game?.characterList} />
+            </div>
+          )}
           <div className="p-4">
             {sortedPosts.map((post) => (
               <PostItem key={post.id} post={post} />
@@ -447,21 +444,29 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
           </Button>
         </div>
       </div>
-      <div className="fixed bottom-4 right-4">
-        <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogTrigger asChild>
-            <Button onClick={() => setShowModal(true)}>New Post</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <NewPostForm
-              onClose={() => setShowModal(false)}
-              gameId={id}
-              day={game?.day ?? 0}
-              taggableUsers={game?.characterList}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      {game?.status === "in_progress" ? (
+        <div className="fixed bottom-4 right-4">
+          <Dialog open={showModal} onOpenChange={setShowModal}>
+            <DialogTrigger asChild>
+              <Button onClick={() => setShowModal(true)}>New Post</Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+              <NewPostForm
+                onClose={() => setShowModal(false)}
+                gameId={id}
+                day={game?.day ?? 0}
+                taggableUsers={game?.characterList}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      ) : (
+        <div className="fixed bottom-4 right-4">
+          <Link href={`/game-summary/${id}`}>
+            <Button>View Game Summary</Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

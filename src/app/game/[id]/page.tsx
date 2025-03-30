@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Heart, ImageIcon, X, Send, ArrowLeft, ChevronLeft, ChevronRight, Loader, User } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Post } from "@/interfaces/Post";
 import { Game } from "@/interfaces/Game";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,7 +21,6 @@ import axios from "@/lib/axios";
 const formatText = (id: string, text: string) => {
   // Split the text by spaces to process each word
   const words = text.split(" ");
-
   return words.map((word, index) => {
     if (word.startsWith("@")) {
       // Handle mentions
@@ -71,7 +71,6 @@ const PostItem = ({ post }: { post: Post }) => {
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent post click event
-
     if (post.creator) {
       const query = new URLSearchParams({
         name: post.creator.name || "",
@@ -101,7 +100,6 @@ const PostItem = ({ post }: { post: Post }) => {
             >
               @{post.creator.username}
             </span>
-
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
           </div>
@@ -136,13 +134,51 @@ interface NewPostFormProps {
   onClose?: () => void;
   gameId: string;
   day: number;
+  // Optionally pass a list of taggable users (e.g. game.characterList)
+  taggableUsers?: any[];
 }
 
-const NewPostForm = ({ onClose, gameId, day }: NewPostFormProps) => {
+const NewPostForm = ({ onClose, gameId, day, taggableUsers }: NewPostFormProps) => {
   const [text, setText] = useState<string>("");
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // States for mention suggestions
+  const [mentionQuery, setMentionQuery] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+
+    // Get the last word from the text
+    const words = newText.split(/\s+/);
+    const lastWord = words[words.length - 1];
+    if (lastWord.startsWith("@")) {
+      const query = lastWord.substring(1);
+      setMentionQuery(query);
+      if (taggableUsers && query.length > 0) {
+        const filtered = taggableUsers.filter((user) => user.username.toLowerCase().includes(query.toLowerCase()));
+        setSuggestions(filtered);
+        setShowSuggestions(true);
+      } else {
+        setShowSuggestions(false);
+      }
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (user: any) => {
+    const words = text.split(/\s+/);
+    // Replace the last word (the mention query) with the selected username (only username inserted)
+    words[words.length - 1] = "@" + user.username;
+    const newText = words.join(" ") + " ";
+    setText(newText);
+    setShowSuggestions(false);
+  };
 
   const handleSubmit = async () => {
     if (!text.trim() && !image) {
@@ -195,13 +231,39 @@ const NewPostForm = ({ onClose, gameId, day }: NewPostFormProps) => {
         <h2 className="text-xl font-bold">New Post</h2>
       </div>
 
-      <Textarea
-        placeholder="What's happening?"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        className="min-h-[100px] mb-4"
-        disabled={loading}
-      />
+      <div className="relative">
+        <Textarea
+          placeholder="What's happening?"
+          value={text}
+          onChange={handleTextChange}
+          className="min-h-[100px] mb-4"
+          disabled={loading}
+        />
+        {/* Improved suggestion dropdown using shadCN UI Command */}
+        {showSuggestions && suggestions.length > 0 && (
+          <Command className="absolute z-10 mt-1 w-full rounded-md border bg-white shadow">
+            <CommandList>
+              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandGroup>
+                {suggestions.map((user) => (
+                  <CommandItem key={user.username} onSelect={() => handleSuggestionClick(user)}>
+                    <div className="flex items-center space-x-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={user.image || "/placeholder.svg"} alt={user.name} />
+                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{user.name}</span>
+                        <span className="text-sm text-gray-500">@{user.username}</span>
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        )}
+      </div>
 
       {image && (
         <div className="relative mb-4">
@@ -355,7 +417,8 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       <ScrollArea className="h-[calc(100vh-80px)]">
         <div className="max-w-xl mx-auto">
           <div className="p-4 border-b bg-white">
-            <NewPostForm gameId={id} day={game?.day ?? 0} />
+            {/* Pass the character list as taggable users to NewPostForm */}
+            <NewPostForm gameId={id} day={game?.day ?? 0} taggableUsers={game?.characterList} />
           </div>
           <div className="p-4">
             {sortedPosts.map((post) => (
@@ -396,12 +459,17 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       </div>
 
       <div className="fixed bottom-4 right-4">
-        <Dialog open={showModal} onOpenChange={setShowModal}>
+        <Dialog>
           <DialogTrigger asChild>
             <Button onClick={() => setShowModal(true)}>New Post</Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
-            <NewPostForm onClose={() => setShowModal(false)} gameId={id} day={game?.day ?? 0} />
+            <NewPostForm
+              onClose={() => setShowModal(false)}
+              gameId={id}
+              day={game?.day ?? 0}
+              taggableUsers={game?.characterList}
+            />
           </DialogContent>
         </Dialog>
       </div>

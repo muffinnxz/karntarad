@@ -42,24 +42,26 @@ const formatText = (id: string, text: string) => {
 };
 
 const formatDay = (day: number) => {
-  switch (day) {
-    case 0:
-      return "Day 0 - Monday";
-    case 1:
-      return "Day 1 - Tuesday";
-    case 2:
-      return "Day 2 - Wednesday";
-    case 3:
-      return "Day 3 - Thursday";
-    case 4:
-      return "Day 4 - Friday";
-    case 5:
-      return "Day 5 - Saturday";
-    case 6:
-      return "Day 6 - Sunday";
-    default:
-      return `Day ${day} - Invalid day`;
-  }
+    switch (day) {
+      case 0:
+        return "Day 0 - Sunday";
+      case 1:
+        return "Day 1 - Monday";
+      case 2:
+        return "Day 2 - Tuesday";
+      case 3:
+        return "Day 3 - Wednesday";
+      case 4:
+        return "Day 4 - Thursday";
+      case 5:
+        return "Day 5 - Friday";
+      case 6:
+        return "Day 6 - Saturday";
+      case 7:
+        return "Day 7 - Sunday";
+      default:
+        return `Day ${day} - Invalid day`;
+    }
 };
 
 const PostItem = ({ post }: { post: Post }) => {

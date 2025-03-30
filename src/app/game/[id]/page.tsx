@@ -315,32 +315,29 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
 
   console.log("Filtered Posts:", filteredPosts);
 
-  const getLastestDay = (posts: Post[]) => {
-    console.log("Posts:", posts);
-    if (dayFilter !== null) {
-      return dayFilter;
-    }
-    return (game?.day ?? 0) - 1;
-  };
-
-  const lastestDay = getLastestDay(filteredPosts);
-
   const sortedPosts = [...filteredPosts].sort((a, b) => {
+    // Sort by day in descending order (newer days first)
+    if (b.day !== a.day) {
+      return b.day - a.day;
+    }
+  
     const isACompanyPost = game?.company.username === a.creator.username;
     const isBCompanyPost = game?.company.username === b.creator.username;
+  
+    // Within the same day, prioritize company posts
     if (isACompanyPost && !isBCompanyPost) return -1;
     if (!isACompanyPost && isBCompanyPost) return 1;
-    if (a.day === lastestDay && b.day !== lastestDay) return -1;
-    if (b.day === lastestDay && a.day !== lastestDay) return 1;
-    return 0;
+  
+    return 0; // Keep default order otherwise
   });
+  
   console.log("Sorted Posts:", sortedPosts);
 
   const navigate = (direction: "prev" | "next") => {
     if (direction === "prev") {
-      setVisibleDay((prev) => (prev > 0 ? prev - 1 : 6));
+      setVisibleDay((prev) => (prev > 0 ? prev - 1 : 0));
     } else {
-      setVisibleDay((prev) => (prev < 6 ? prev + 1 : 0));
+      setVisibleDay((prev) => (prev < (game?.day ?? 6) ? prev + 1 : (game?.day ?? 6)));
     }
   };
 
@@ -420,17 +417,16 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       </ScrollArea>
       <div className="fixed bottom-4 left-4">
         <div className="flex items-center gap-2">
+            <Button
+                variant={dayFilter === null ? "default" : "outline"}
+                onClick={() => setDayFilter(null)}
+                className="min-w-[60px]"
+                >
+                All
+            </Button>
           <Button variant="ghost" size="icon" onClick={() => navigate("prev")} className="h-8 w-8">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <div className="flex gap-2">
-            <Button
-              variant={dayFilter === null ? "default" : "outline"}
-              onClick={() => setDayFilter(null)}
-              className="min-w-[60px]"
-            >
-              All
-            </Button>
             <Button
               variant={dayFilter === visibleDay ? "default" : "outline"}
               onClick={() => setDayFilter(visibleDay)}
@@ -438,7 +434,6 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
             >
               {visibleDay}
             </Button>
-          </div>
           <Button variant="ghost" size="icon" onClick={() => navigate("next")} className="h-8 w-8">
             <ChevronRight className="h-4 w-4" />
           </Button>

@@ -101,39 +101,39 @@ const PostItem = ({ post }: { post: Post }) => {
   return (
     <Card className="mb-4 p-4 border-b hover:bg-gray-50 transition-colors cursor-pointer">
       <div className="flex items-start space-x-3">
-        <Avatar className="h-10 w-10 cursor-pointer profile-link" onClick={handleProfileClick}>
+        <Avatar className="h-12 w-12 cursor-pointer profile-link" onClick={handleProfileClick}>
           <AvatarImage src={post.creator.image} alt={post.creator.name} />
           <AvatarFallback>{post.creator.name.charAt(0)}</AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <div className="flex items-center">
-            <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
-              {post.creator.name}
-            </span>
-            <span
-              className="text-gray-500 ml-2 hover:underline cursor-pointer profile-link"
-              onClick={handleProfileClick}
-            >
-              @{post.creator.username}
-            </span>
-            <span className="text-gray-500 mx-2">·</span>
-            <span className="text-gray-500">{formatDay(post.day)}</span>
-            {post.sentiment && (
-              <Badge
-                variant="outline"
-                className={`ml-2 text-xs px-1.5 py-0 ${
-                  post.sentiment === "positive"
-                    ? "bg-green-100 text-green-800 border-green-300"
-                    : post.sentiment === "neutral"
-                    ? "bg-yellow-100 text-yellow-800 border-yellow-300"
-                    : "bg-red-100 text-red-800 border-red-300"
-                }`}
-              >
-                {post.sentiment}
-              </Badge>
-            )}
+        <div className="flex-1 w-full">
+          <div className="flex justify-between items-start w-full">
+            <div>
+              <span className="font-semibold hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
+                {post.creator.name}
+              </span>
+              <div className="text-gray-500 text-sm hover:underline cursor-pointer profile-link" onClick={handleProfileClick}>
+                @{post.creator.username}
+              </div>
+            </div>
+            <span className="text-gray-500 text-sm">{formatDay(post.day)}</span>
           </div>
-          <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
+          {post.sentiment && (
+            <Badge
+              variant="outline"
+              className={`mt-1 text-xs px-1.5 py-0 ${
+                post.sentiment === "positive"
+                  ? "bg-green-100 text-green-800 border-green-300"
+                  : post.sentiment === "neutral"
+                  ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                  : "bg-red-100 text-red-800 border-red-300"
+              }`}
+            >
+              {post.sentiment}
+            </Badge>
+          )}
+        </div>
+      </div>
+      <div className="mt-2 text-gray-800">{formatText(post.gameId, post.text)}</div>
           {post.image && (
             <div className="mt-3 rounded-xl overflow-hidden">
               <Image
@@ -151,8 +151,6 @@ const PostItem = ({ post }: { post: Post }) => {
               <span>{likes}</span>
             </Button>
           </div>
-        </div>
-      </div>
     </Card>
   );
 };
@@ -404,12 +402,12 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
           </Button>
         </Link>
         <div className="flex flex-col">
-          <h1 className="text-xl font-bold">{`Company: ${game?.company.name}`}</h1>
+          <h1 className="text-sm font-bold">{`Company: ${game?.company.name}`}</h1>
           <div className="flex justify-between items-center">
             <div>
-              <span className="text-gray-600">{`Scenario: ${game?.scenario.name}`}</span>
-              <span className="text-gray-500 mx-2">·</span>
-              <span className="text-gray-500">{formatDay(game?.day ?? 0)}</span>
+              <span className="text-sm text-gray-600">{`Scenario: ${game?.scenario.name}`}</span>
+              <span className="text-sm text-gray-500 mx-2">·</span>
+              <span className="text-sm text-gray-500">{formatDay(game?.day ?? 0)}</span>
             </div>
           </div>
         </div>
@@ -475,7 +473,7 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       ) : (
         <div className="fixed bottom-4 right-4">
           <Link href={`/game-summary/${id}`}>
-            <Button>View Game Summary</Button>
+            <Button>Result</Button>
           </Link>
         </div>
       )}

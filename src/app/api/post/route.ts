@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     // 1. decide like and follower change
 
-    const generateLikeCountFile = path.join(process.cwd(), "src/prompts/likecount.txt");
+    const generateLikeCountFile = path.join(process.cwd(), "src/prompts/adjust-like-count.txt");
     const likeCountContent = fs.readFileSync(generateLikeCountFile, "utf-8");
 
     const likeCountPrompt = likeCountContent

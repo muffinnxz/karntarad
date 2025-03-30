@@ -16,6 +16,7 @@ import type { Game } from "@/interfaces/Game";
 import type { Character } from "@/interfaces/Character";
 import { useAuth } from "@/contexts/AuthContext";
 import axios from "@/lib/axios";
+import { Badge } from "@/components/ui/badge";
 
 // Format text with @ and # highlighting
 const formatText = (id: string, text: string) => {
@@ -116,17 +117,18 @@ const PostItem = ({ post }: { post: Post }) => {
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
             {post.sentiment && (
-              <span
-                className={`ml-2 font-bold ${
+              <Badge
+                variant="outline"
+                className={`ml-2 text-xs px-1.5 py-0 ${
                   post.sentiment === "positive"
-                    ? "text-green-500"
+                    ? "bg-green-100 text-green-800 border-green-300"
                     : post.sentiment === "neutral"
-                    ? "text-[#c6dc3c]"
-                    : "text-red-500"
+                    ? "bg-yellow-100 text-yellow-800 border-yellow-300"
+                    : "bg-red-100 text-red-800 border-red-300"
                 }`}
               >
-                ●
-              </span>
+                {post.sentiment}
+              </Badge>
             )}
           </div>
           <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>
@@ -333,24 +335,24 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
     if (b.day !== a.day) {
       return b.day - a.day;
     }
-  
+
     const isACompanyPost = game?.company.username === a.creator.username;
     const isBCompanyPost = game?.company.username === b.creator.username;
-  
+
     // Within the same day, prioritize company posts
     if (isACompanyPost && !isBCompanyPost) return -1;
     if (!isACompanyPost && isBCompanyPost) return 1;
-  
+
     return 0; // Keep default order otherwise
   });
-  
+
   console.log("Sorted Posts:", sortedPosts);
 
   const navigate = (direction: "prev" | "next") => {
     if (direction === "prev") {
       setVisibleDay((prev) => (prev > 0 ? prev - 1 : 0));
     } else {
-      setVisibleDay((prev) => (prev < (game?.day ?? 6) ? prev + 1 : (game?.day ?? 6)));
+      setVisibleDay((prev) => (prev < (game?.day ?? 6) ? prev + 1 : game?.day ?? 6));
     }
   };
 
@@ -430,23 +432,23 @@ export default function GamePage({ params: { id } }: { params: { id: string } })
       </ScrollArea>
       <div className="fixed bottom-4 left-4">
         <div className="flex items-center gap-2">
-            <Button
-                variant={dayFilter === null ? "default" : "outline"}
-                onClick={() => setDayFilter(null)}
-                className="min-w-[60px]"
-                >
-                All
-            </Button>
+          <Button
+            variant={dayFilter === null ? "default" : "outline"}
+            onClick={() => setDayFilter(null)}
+            className="min-w-[60px]"
+          >
+            All
+          </Button>
           <Button variant="ghost" size="icon" onClick={() => navigate("prev")} className="h-8 w-8">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-            <Button
-              variant={dayFilter === visibleDay ? "default" : "outline"}
-              onClick={() => setDayFilter(visibleDay)}
-              className="min-w-[40px] whitespace-nowrap"
-            >
-              {visibleDay}
-            </Button>
+          <Button
+            variant={dayFilter === visibleDay ? "default" : "outline"}
+            onClick={() => setDayFilter(visibleDay)}
+            className="min-w-[40px] whitespace-nowrap"
+          >
+            {visibleDay}
+          </Button>
           <Button variant="ghost" size="icon" onClick={() => navigate("next")} className="h-8 w-8">
             <ChevronRight className="h-4 w-4" />
           </Button>

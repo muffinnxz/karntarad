@@ -17,7 +17,7 @@ Your response MUST be a valid JSON array containing character response objects. 
 [
   {
     "username": "character_username",
-    "content": "Post content that mentions the company with proper format: ' @{{company.username}} ' (space before and after)",
+    "content": "Post content that mentions the company with proper format: a space before the @ symbol and no space between the @ and the company username, with a space after the username (e.g., ' ... @dunkindonut ')",
     "likes": number,
     "sentiment": "positive|neutral|negative" 
   },
@@ -45,7 +45,7 @@ Each character response should:
 2. Maintain the character's unique voice, vocabulary, and communication style
 3. Use terminology, slang, and references authentic to the scenario world
 4. Show continuity with the character's previous posts and attitudes
-5. Include the proper mention format with spaces: " @{{company.username}} " (space before and after)
+5. Include the proper mention format with spaces: " @{{company.username}} " (a space before the @ symbol and no space between the @ and the company username, with a space after the username (e.g., ' ... @dunkindonut ')"),
 6. Feel like an organic, authentic reaction rather than a generic comment
 7. Potentially reference or interact with other characters' previous posts
 8. Vary in length and enthusiasm based on the character's personality and interest in the topic
@@ -104,5 +104,5 @@ Neutral Response Example (Late Day):
 - Ensure each response feels authentic to the character and the scenario world
 - Make responses specific to the content of the user post, not generic
 - Keep all character interactions within the established tone and rules of the scenario
-- Ensure proper mention format with spaces around the @ symbol
+- Ensure proper mention format with spaces around the @ symbol but no space between @ and company name ex. You need to use @dunkindonut not @ dunkindonut
 - Adapt responses to be appropriate for the current day in the simulation 

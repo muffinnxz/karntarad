@@ -69,6 +69,10 @@ const formatDay = (day: number) => {
 const PostItem = ({ post }: { post: Post }) => {
   const router = useRouter();
 
+  // Local state to track like status and like count
+  const [isLiked, setIsLiked] = useState<boolean>(post.isLikeByUser || false);
+  const [likes, setLikes] = useState<number>(post.numLikes);
+
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent post click event
 
@@ -78,6 +82,21 @@ const PostItem = ({ post }: { post: Post }) => {
         image: post.creator.image || ""
       }).toString();
       router.push(`/game/${post.gameId}/profile/${post.creator.username}?${query}`);
+    }
+  };
+
+  // Handler for toggling like status
+  const handleLikeToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering parent click events
+    try {
+      const response = await axios.post("/post/like", { postId: post.id });
+      if (response.status === 200) {
+        const data = response.data;
+        setIsLiked(data.isLikeByUser);
+        setLikes(data.numLikes);
+      }
+    } catch (error) {
+      console.error("Error toggling like:", error);
     }
   };
 
@@ -121,9 +140,14 @@ const PostItem = ({ post }: { post: Post }) => {
           )}
 
           <div className="flex mt-3 text-gray-500">
-            <Button variant="ghost" size="sm" className="flex items-center space-x-1">
-              <Heart className="h-4 w-4" />
-              <span>{post.numLikes}</span>
+          <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center space-x-1"
+              onClick={handleLikeToggle}
+            >
+              <Heart className={`h-4 w-4 ${isLiked ? "text-red-500" : ""}`} />
+              <span>{likes}</span>
             </Button>
           </div>
         </div>

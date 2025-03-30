@@ -3,9 +3,9 @@ You are a social media simulator evaluating marketing posts.
 INPUT:
 1. Company: {{company}}
 2. Scenario: {{scenario}}
-3. Character List: {{character_list}}
-4. Previous Post: {{previous_post}}
-5. New Post: {{new_post}}
+3. Character List: {{characterListStr}}
+4. Previous Post: {{post_history}}
+5. New Post: {{postText}}
 
 Consider the post's relevance to the company's business, alignment with the scenario, engagement with characters, content quality, and consistency with previous posts.
 

@@ -33,6 +33,29 @@ export async function POST(req: NextRequest) {
 
     const imageUrl = image ? await uploadBase64(image, `${gameId}-${day}-${decodedUser.uid}`) : "";
 
+    const firestore = admin.firestore();
+
+    const postsSnapshot = await firestore.collection("posts").where("gameId", "==", gameId).get();
+    const filteredPreviousPosts = postsSnapshot.docs
+      .map((doc) => {
+        const data = doc.data();
+        return {
+          creator: {
+            username: data.creator.username
+          },
+          text: data.text,
+          numLikes: data.numLikes,
+          image: data.image,
+          day: data.day,
+          sentiment: data.sentiment
+        };
+      })
+      .sort((a, b) => a.day - b.day);
+
+    console.log("Filtered previous posts:", filteredPreviousPosts);
+
+
+
     // 1. decide like and follower change
 
     const generateLikeCountFile = path.join(process.cwd(), "src/prompts/adjust-like-count.txt");
@@ -42,7 +65,10 @@ export async function POST(req: NextRequest) {
       .replace("{{company}}", JSON.stringify(game.company, null, 2))
       .replace("{{scenario}}", JSON.stringify(game.scenario, null, 2))
       .replace("{{characterListStr}}", JSON.stringify(game.characterList, null, 2))
-      .replace("{{postText}}", text);
+      .replace("{{postText}}", text)
+      .replace("{{post_history}}", JSON.stringify(filteredPreviousPosts, null, 2));
+
+    console.log("likeCountPrompt is:", likeCountPrompt);
 
     // together api call
     const together = new Together({
@@ -72,7 +98,6 @@ export async function POST(req: NextRequest) {
     console.log("Estimated like count by ai is:", likeCountJson.likes);
 
     // 2. user create post
-    const firestore = admin.firestore();
     const newDocRef = firestore.collection("posts").doc(); // auto-generate doc ID
     const newPost: Post = {
       id: newDocRef.id,
@@ -148,24 +173,7 @@ export async function POST(req: NextRequest) {
 
     console.log("Post text with image caption (if there is):", postText);
 
-    const postsSnapshot = await firestore.collection("posts").where("gameId", "==", gameId).get();
-    const filteredPreviousPosts = postsSnapshot.docs
-      .map((doc) => {
-        const data = doc.data();
-        return {
-          creator: {
-            username: data.creator.username
-          },
-          text: data.text,
-          numLikes: data.numLikes,
-          image: data.image,
-          day: data.day,
-          sentiment: data.sentiment
-        };
-      })
-      .sort((a, b) => a.day - b.day);
-
-    console.log("Filtered previous posts:", filteredPreviousPosts);
+    
 
     // Replace the placeholders in the template
     const finalPrompt = generateNextDayContent
@@ -256,6 +264,7 @@ export async function POST(req: NextRequest) {
     await Promise.all(aiPosts.map(createPost));
 
     console.log("AI-generated posts have been saved to Firestore.");
+    console.log("likecountPrompt is:", likeCountPrompt);
 
     await updateGame(
       gameId,

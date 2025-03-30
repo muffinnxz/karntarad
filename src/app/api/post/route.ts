@@ -110,7 +110,43 @@ export async function POST(req: NextRequest) {
     };
 
     const characters = game.characterList;
-    const postText = text;
+    let postText = text;
+
+    try {
+      if (image) {
+        // generate image caption
+        const imageCaptionResponse = await together.chat.completions.create({
+          model: "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "Describe the image in detail with in a few sentences."
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: image
+                  }
+                }
+              ]
+            }
+          ],
+          max_tokens: 512
+        });
+
+        const imageCaption = imageCaptionResponse?.choices[0]?.message?.content;
+
+        postText += `\n\nThe attached image is also described as: ${imageCaption}`;
+      }
+    } catch (error) {
+      console.error("Error generating image caption:", error);
+      // Continue execution even if image caption fails
+    }
+
+    console.log("Post text with image caption (if there is):", postText);
 
     const postsSnapshot = await firestore.collection("posts").where("gameId", "==", gameId).get();
     const filteredPreviousPosts = postsSnapshot.docs
@@ -123,7 +159,8 @@ export async function POST(req: NextRequest) {
           text: data.text,
           numLikes: data.numLikes,
           image: data.image,
-          day: data.day
+          day: data.day,
+          sentiment: data.sentiment
         };
       })
       .sort((a, b) => a.day - b.day);

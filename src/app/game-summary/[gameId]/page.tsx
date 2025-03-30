@@ -3,7 +3,7 @@ import type React from "react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ThumbsUp, Heart, User, PlayIcon, Building2 } from "lucide-react";
+import { ArrowLeft, ThumbsUp, Heart, User, PlayIcon, Building } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -12,7 +12,8 @@ import { Game } from "@/interfaces/Game";
 import axios from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
 import { CartesianGrid, LabelList, Line, LineChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { Progress } from "@/components/ui/progress";
+
+import { BarChart, Bar, Tooltip, Legend } from "recharts";
 
 interface DailyLikes {
   day: number;
@@ -22,21 +23,16 @@ interface DailyLikes {
 interface StatsBoxProps {
   icon: React.ReactNode;
   title: string;
-  label: string;
-  total: number;
   dailyLikes?: DailyLikes[];
 }
 
-function StatsBox({ icon, title, label, total, dailyLikes }: StatsBoxProps) {
+function StatsBox({ icon, title, dailyLikes }: StatsBoxProps) {
   return (
     <Card className="w-full">
       <CardContent className="p-6">
         <div className="flex items-center gap-3 mb-2">
           {icon}
           <h3 className="text-lg font-medium">{title}</h3>
-          <div className="text-2xl font-bold ml-auto">
-            {total.toLocaleString()} {label}
-          </div>
         </div>
         <div className="h-64 mt-6">
           <ResponsiveContainer width="100%" height="100%">
@@ -87,13 +83,26 @@ function StatsBox({ icon, title, label, total, dailyLikes }: StatsBoxProps) {
 interface MetricCardProps {
   icon: React.ReactNode;
   title: string;
-  start: number;
+  start?: number;
   end: number;
-  growth: number;
+  growth?: number;
   percentage?: boolean;
 }
 
 function MetricCard({ icon, title, start, end, growth }: MetricCardProps) {
+  if (!start || !growth) {
+    return (
+      <Card className="w-full h-full">
+        <CardContent className="p-6 h-full">
+          <div className="flex items-center gap-3">
+            {icon}
+            <h3 className="text-lg font-medium">{title}</h3>
+            <div className="text-2xl font-bold ml-auto">{end.toLocaleString()} Likes</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   return (
     <Card className="w-full">
       <CardContent className="p-6">
@@ -111,7 +120,6 @@ function MetricCard({ icon, title, start, end, growth }: MetricCardProps) {
             <div className="font-semibold text-2xl">{end.toLocaleString()}</div>
           </div>
           <div className="pt-4">
-            <Progress value={80} className="h-2 mb-2 bg-gray-200" />
             <div className="flex justify-end">
               <div className={`text-sm font-medium ${growth >= 0 ? "text-[#8884d8]" : "text-red-600"}`}>
                 {growth >= 0 ? "+" : "-"}
@@ -126,12 +134,10 @@ function MetricCard({ icon, title, start, end, growth }: MetricCardProps) {
 }
 
 const formatText = (id: string, text: string) => {
-  // Split the text by spaces to process each word
   const words = text.split(" ");
 
   return words.map((word, index) => {
     if (word.startsWith("@")) {
-      // Handle mentions
       return (
         <span key={index}>
           <Link href={`/game/${id}/profile/${word.substring(1)}`} className="text-blue-500 hover:underline">
@@ -142,8 +148,10 @@ const formatText = (id: string, text: string) => {
     } else if (word.startsWith("#")) {
       // Handle hashtags
       return (
-        <span key={index} className="text-blue-500">
-          {word}
+        <span key={index}>
+          <Link href={`/hashtag/${word.substring(1)}`} className="text-blue-500 hover:underline">
+            {word}
+          </Link>{" "}
         </span>
       );
     } else {
@@ -156,21 +164,21 @@ const formatText = (id: string, text: string) => {
 const formatDay = (day: number) => {
   switch (day) {
     case 0:
-      return "Day 0 - Monday";
+      return "day 0 - Monday";
     case 1:
-      return "Day 1 - Tuesday";
+      return "day 1 - Tuesday";
     case 2:
-      return "Day 2 - Wednesday";
+      return "day 2 - Wednesday";
     case 3:
-      return "Day 3 - Thursday";
+      return "day 3 - Thursday";
     case 4:
-      return "Day 4 - Friday";
+      return "day 4 - Friday";
     case 5:
-      return "Day 5 - Saturday";
+      return "day 5 - Saturday";
     case 6:
-      return "Day 6 - Sunday";
+      return "day 6 - Sunday";
     default:
-      return `Day ${day} - Invalid day`;
+      return `day ${day} - Invalid day`;
   }
 };
 
@@ -215,14 +223,72 @@ const PostItem = ({ post }: { post: Post }) => {
     </Card>
   );
 };
+interface SentimentData {
+  day: number;
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
+// Add new component for Sentiment Chart
+function SentimentBarChart({ data }: { data: SentimentData[] }) {
+  return (
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Heart className="h-6 w-6" />
+          <h3 className="text-lg font-medium">Community Sentiment Analysis</h3>
+          <div className="text-2xl font-bold ml-auto">
+            Total of {data.reduce((sum, day) => sum + day.positive + day.neutral + day.negative, 0)} posts
+          </div>
+        </div>
+        <div className="h-64 mt-6">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 30, right: 20, left: 20, bottom: 20 }}>
+              <CartesianGrid horizontal={true} vertical={false} stroke="#eee" />
+              <XAxis
+                dataKey="day"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(day) => `Day ${day}`}
+              />
+              <YAxis hide={true} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "white",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "6px",
+                  padding: "8px"
+                }}
+              />
+              <Legend
+                verticalAlign="top"
+                align="right"
+                iconType="circle"
+                wrapperStyle={{
+                  paddingBottom: "20px"
+                }}
+              />
+              <Bar dataKey="positive" fill="#22c55e" name="Positive" radius={[4, 4, 0, 0]} /> {/* Green-500 */}
+              <Bar dataKey="neutral" fill="#eab308" name="Neutral" radius={[4, 4, 0, 0]} /> {/* Yellow-500 */}
+              <Bar dataKey="negative" fill="#ef4444" name="Negative" radius={[4, 4, 0, 0]} /> {/* Red-500 */}
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function GameSummary({ params }: { params: { gameId: string } }) {
   const [isLoading, setIsLoading] = useState(true);
   const [totalLikes, setTotalLikes] = useState(0);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [gameData, setGameData] = useState<Game | null>(null);
   const [dailyLikes, setDailyLikes] = useState<DailyLikes[]>([]);
+  const [sentimentData, setSentimentData] = useState<SentimentData[]>([]);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -240,6 +306,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
           const posts = postResponse.data;
 
           const userPosts = posts.filter((post: Post) => post.creator.username === gameData.company?.username);
+          const botPosts = posts.filter((post: Post) => post.creator.username !== gameData.company?.username);
 
           // Calculate daily likes
           const dailyLikes: DailyLikes[] = Array.from({ length: 7 }, (_, i) => ({
@@ -249,9 +316,21 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
               .reduce((acc: number, post: Post) => acc + post.numLikes, 0)
           }));
 
+          // Calculate sentiment data for each day
+          const sentimentByDay: SentimentData[] = Array.from({ length: 7 }, (_, day) => {
+            const dayPosts = botPosts.filter((post: Post) => post.day === day);
+            return {
+              day,
+              positive: dayPosts.filter((post: Post) => post.sentiment === "positive").length,
+              neutral: dayPosts.filter((post: Post) => post.sentiment === "neutral").length,
+              negative: dayPosts.filter((post: Post) => post.sentiment === "negative").length
+            };
+          });
+
           setTotalLikes(userPosts.reduce((acc: number, post: Post) => acc + post.numLikes, 0));
-          setPosts(userPosts);
-          setDailyLikes(dailyLikes); // Add state for dailyLikes
+          setUserPosts(userPosts);
+          setDailyLikes(dailyLikes);
+          setSentimentData(sentimentByDay);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -266,10 +345,10 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
   }, [params.gameId, user]);
 
   useEffect(() => {
-    if (posts.length > 0) {
-      setFilteredPosts(posts.sort((a, b) => b.numLikes - a.numLikes).slice(0, 3));
+    if (userPosts.length > 0) {
+      setFilteredPosts(userPosts.sort((a, b) => b.numLikes - a.numLikes).slice(0, 3));
     }
-  }, [posts]);
+  }, [userPosts]);
 
   const calculateGrowth = (start: number, end: number) => {
     return start === 0 ? 100 : Math.round(((end - start) / start) * 100);
@@ -330,7 +409,7 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
           <div className="grid gap-4">
             <div className="border rounded-lg p-4 bg-white">
               <div className="flex items-center gap-2 mb-2">
-                <Building2 className="h-5 w-5 text-gray-600" />
+                <Building className="h-5 w-5 text-gray-600" />
                 <span className="text-sm font-medium text-gray-500">COMPANY</span>
               </div>
               <h2 className="text-lg font-semibold text-gray-800">{gameData.company.name}</h2>
@@ -350,21 +429,27 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <MetricCard
-          icon={<User className="h-6 w-6" />}
-          title="Total Followers"
-          start={10000}
-          end={gameData.followerCount}
-          growth={calculateGrowth(10000, gameData.followerCount)}
-          percentage={true}
-        />
+        <div className="grid grid-cols-1 gap-6 items-stretch">
+          <MetricCard
+            icon={<User className="h-6 w-6" />}
+            title="Total Followers"
+            start={10000}
+            end={gameData.followerCount}
+            growth={calculateGrowth(10000, gameData.followerCount)}
+            percentage={true}
+          />
+          <MetricCard icon={<ThumbsUp className="h-6 w-6" />} title="Total Likes" end={totalLikes} />
+        </div>
+
         <StatsBox
           icon={<ThumbsUp className="h-6 w-6" />}
-          title="Total Likes"
-          label="likes"
-          total={totalLikes}
+          title="Likes Distribution in User Posts"
           dailyLikes={dailyLikes}
         />
+      </div>
+
+      <div className="mb-8">
+        <SentimentBarChart data={sentimentData} />
       </div>
 
       <h2 className="text-2xl font-semibold mb-4">Top Performing Posts</h2>

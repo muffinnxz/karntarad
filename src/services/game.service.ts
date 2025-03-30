@@ -35,7 +35,7 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
 
   // Parse the response content to extract characters and posts
   let characterList: Character[] = [];
-  let postsList: { username: string; content: string; likes: number }[] = [];
+  let postsList: { username: string; content: string; likes: number; sentiment: string }[] = [];
 
   if (responseContent) {
     // Extract characters from XML-like tags
@@ -61,7 +61,7 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
     }
   }
 
-  const createPost = async (v: { username: string; content: string; likes: number }) => {
+  const createPost = async (v: { username: string; content: string; likes: number; sentiment: string }) => {
     const postRef = firestore.collection("posts").doc();
 
     await postRef.set({
@@ -73,7 +73,8 @@ export const createGame = async (userId: string, companyId: string, scenarioId: 
         username: v.username
       },
       text: v.content,
-      numLikes: v.likes || 0
+      numLikes: v.likes || 0,
+      sentiment: v.sentiment || "neutral"
     });
   };
 

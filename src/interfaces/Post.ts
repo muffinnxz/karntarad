@@ -13,4 +13,5 @@ export interface Post {
   numLikes: number;
   image?: string;
   sentiment?: string;
+  isLikeByUser?: boolean;
 }

@@ -11,9 +11,9 @@ Inputs:
 
 For each character, generate a post that follows this structure:
 {
-  "username": string,  // the digital marketing username
+  "username": string,  
   "content": string,       // A creative and authentic post text that reflects the product (based on {{companyDescription}} and {{scenarioDescription}}) and incorporates the user's post text/campaign details ({{postText}}). The post may express a positive or negative opinion. The text must always end with a space followed by the tag "@{{companyUsername}}".
-  "likes": number,   // initialize to 0
+  "likes": number,   
 }
 
 Generate all posts in a single JSON array output without any additional commentary or text.

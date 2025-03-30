@@ -1,11 +1,9 @@
 "use client";
-
 import type React from "react";
 import Image from "next/image";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ThumbsUp, Heart, User } from "lucide-react";
+import { ArrowLeft, ThumbsUp, Heart, User, PlayIcon, Building2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -13,67 +11,118 @@ import { Post } from "@/interfaces/Post";
 import { Game } from "@/interfaces/Game";
 import axios from "@/lib/axios";
 import { useAuth } from "@/contexts/AuthContext";
+import { CartesianGrid, LabelList, Line, LineChart, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { Progress } from "@/components/ui/progress";
+
+interface DailyLikes {
+  day: number;
+  likes: number;
+}
 
 interface StatsBoxProps {
   icon: React.ReactNode;
   title: string;
   label: string;
   total: number;
-  dailyData?: DailyLikes[];
+  dailyLikes?: DailyLikes[];
 }
 
-function StatsBox({ icon, title, label, total, dailyData }: StatsBoxProps) {
-  if (!dailyData) {
-    return (
-      <Card className="w-full">
-        <CardContent className="flex items-center justify-between p-6">
-          <div className="flex items-center gap-3">
-            {icon}
-            <h3 className="text-lg font-medium">{title}</h3>
-          </div>
-          <div className="text-2xl font-bold">
-            {total.toLocaleString()} {label}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const maxLikes = Math.max(...dailyData.map((d) => d.likes));
-
+function StatsBox({ icon, title, label, total, dailyLikes }: StatsBoxProps) {
   return (
     <Card className="w-full">
       <CardContent className="p-6">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-2">
           {icon}
           <h3 className="text-lg font-medium">{title}</h3>
-          <div className="ml-auto text-2xl font-bold">
+          <div className="text-2xl font-bold ml-auto">
             {total.toLocaleString()} {label}
           </div>
         </div>
-        <div className="h-40 flex items-end gap-2">
-          {dailyData.map((data) => (
-            <div key={data.day} className="flex-1 flex flex-col items-center">
-              <div
-                className="w-full bg-blue-500 rounded-t"
-                style={{
-                  height: `${(data.likes / maxLikes) * 100}%`,
-                  minHeight: data.likes > 0 ? "8px" : "0"
-                }}
+        <div className="h-64 mt-6">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={dailyLikes} margin={{ top: 30, right: 20, left: 20, bottom: 20 }}>
+              <CartesianGrid horizontal={true} vertical={false} stroke="#eee" />
+              <XAxis
+                dataKey="day"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(day) => `Day ${day}`}
               />
-              <div className="text-xs mt-2">{formatDay(data.day).split("-")[0]}</div>
-              <div className="text-xs text-gray-500">{data.likes}</div>
-            </div>
-          ))}
+              <YAxis hide={true} />
+              <Line
+                dataKey="likes"
+                type="monotone"
+                stroke="#8884d8"
+                strokeWidth={2}
+                dot={{
+                  r: 5,
+                  fill: "#8884d8",
+                  stroke: "#8884d8"
+                }}
+                activeDot={{
+                  r: 7,
+                  fill: "#8884d8",
+                  stroke: "#fff",
+                  strokeWidth: 2
+                }}
+              >
+                <LabelList
+                  dataKey="likes"
+                  position="top"
+                  offset={10}
+                  fill="#666"
+                  fontSize={12}
+                  formatter={(value: number) => `${value}`}
+                />
+              </Line>
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-interface DailyLikes {
-  day: number;
-  likes: number;
+interface MetricCardProps {
+  icon: React.ReactNode;
+  title: string;
+  start: number;
+  end: number;
+  growth: number;
+  percentage?: boolean;
+}
+
+function MetricCard({ icon, title, start, end, growth }: MetricCardProps) {
+  return (
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-3 mb-6">
+          {icon}
+          <h3 className="text-lg font-medium">{title}</h3>
+        </div>
+        <div className="space-y-4">
+          <div className="flex justify-between items-baseline">
+            <div className="text-sm text-gray-500">Started with</div>
+            <div className="font-semibold text-xl">{start.toLocaleString()}</div>
+          </div>
+          <div className="flex justify-between items-baseline">
+            <div className="text-sm text-gray-500">Ended with</div>
+            <div className="font-semibold text-2xl">{end.toLocaleString()}</div>
+          </div>
+          <div className="pt-4">
+            <Progress value={80} className="h-2 mb-2 bg-gray-200" />
+            <div className="flex justify-end">
+              <div className={`text-sm font-medium ${growth >= 0 ? "text-[#8884d8]" : "text-red-600"}`}>
+                {growth >= 0 ? "+" : "-"}
+                {growth}% growth
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 const formatText = (id: string, text: string) => {
@@ -224,6 +273,10 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
     }
   }, [posts]);
 
+  const calculateGrowth = (start: number, end: number) => {
+    return start === 0 ? 100 : Math.round(((end - start) / start) * 100);
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-5xl">
@@ -272,33 +325,50 @@ export default function GameSummary({ params }: { params: { gameId: string } }) 
         </Link>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Game Summary</h1>
-          <p className="text-gray-600">
-            {gameData.company.name} - {gameData.company.description}
-          </p>
-          <p className="text-gray-600">
-            {gameData.scenario.name} - {gameData.scenario.description}
-          </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 space-y-4 md:space-y-0">
+        <div className="w-full space-y-4">
+          <h1 className="text-3xl font-bold text-gray-900">Game Summary</h1>
+
+          <div className="grid gap-4">
+            <div className="border rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="h-5 w-5 text-gray-600" />
+                <span className="text-sm font-medium text-gray-500">COMPANY</span>
+              </div>
+              <h2 className="text-lg font-semibold text-gray-800">{gameData.company.name}</h2>
+              <p className="text-sm text-gray-600 mt-1">{gameData.company.description}</p>
+            </div>
+
+            <div className="border rounded-lg p-4 bg-white">
+              <div className="flex items-center gap-2 mb-2">
+                <PlayIcon className="h-5 w-5 text-gray-600" />
+                <span className="text-sm font-medium text-gray-500">SCENARIO</span>
+              </div>
+              <h2 className="text-lg font-semibold text-gray-800">{gameData.scenario.name}</h2>
+              <p className="text-sm text-gray-600 mt-1">{gameData.scenario.description}</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <MetricCard
+          icon={<User className="h-6 w-6" />}
+          title="Total Followers"
+          start={10000}
+          end={gameData.followerCount}
+          growth={calculateGrowth(10000, gameData.followerCount)}
+          percentage={true}
+        />
         <StatsBox
           icon={<ThumbsUp className="h-6 w-6" />}
           title="Total Likes"
           label="likes"
           total={totalLikes}
-          dailyData={dailyLikes}
-        />
-        <StatsBox
-          icon={<User className="h-6 w-6" />}
-          title="Total Followers"
-          label="followers"
-          total={gameData.followerCount}
+          dailyLikes={dailyLikes}
         />
       </div>
+
       <h2 className="text-2xl font-semibold mb-4">Top Performing Posts</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {filteredPosts.map((post) => (

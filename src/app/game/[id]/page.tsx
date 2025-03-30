@@ -123,6 +123,19 @@ const PostItem = ({ post }: { post: Post }) => {
 
             <span className="text-gray-500 mx-2">·</span>
             <span className="text-gray-500">{formatDay(post.day)}</span>
+            {post.sentiment && (
+              <span
+                className={`ml-2 font-bold ${
+                  post.sentiment === "positive"
+                    ? "text-green-500"
+                    : post.sentiment === "neutral"
+                    ? "text-[#c6dc3c]"
+                    : "text-red-500"
+                }`}
+              >
+                ●
+              </span>
+            )}
           </div>
 
           <div className="mt-1 text-gray-800">{formatText(post.gameId, post.text)}</div>

@@ -119,6 +119,8 @@ export default function LoadGameScreen() {
       return;
     }
 
+    // Immediately close the dialog so it's not visible during creation
+    setShowNewGameModal(false);
     setCreatingGame(true);
 
     axios
@@ -128,8 +130,9 @@ export default function LoadGameScreen() {
       })
       .then((response) => {
         console.log("Game created successfully:", response.data);
-        setShowNewGameModal(false);
+        // Navigate to the new game
         router.push(`/game/${response.data.id}`);
+        // Reset any selected data
         setSelectedCompany(null);
         setSelectedScenario(null);
       })

@@ -292,14 +292,14 @@ export default function LoadGameScreen() {
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
                           <Clock className="h-3 w-3 mr-1" />
-                          Day {game.day}
+                          {game.status === "in_progress" ? `Day ${game.day}` : "Completed"}
                         </Badge>
                       </div>
                     </div>
                   </CardContent>
                   <CardFooter className="p-5 pt-0 mt-auto">
                     <Button className="w-full" variant="default">
-                      Continue Game
+                      {game.status === "in_progress" ? "Continue Game" : "View Game"}
                     </Button>
                   </CardFooter>
                 </Card>

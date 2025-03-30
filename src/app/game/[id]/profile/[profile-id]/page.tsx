@@ -8,7 +8,7 @@ import axios from "@/lib/axios";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Heart } from "lucide-react";
+import { ArrowLeft, Heart, Loader } from "lucide-react";
 import { Character } from "@/interfaces/Character";
 import { Post } from "@/interfaces/Post";
 import { useAuth } from "@/contexts/AuthContext";
@@ -185,7 +185,16 @@ export default function UserProfilePage({ params }: { params: { id: string; "pro
     }
   }, [profile, gameId]);
 
-  if (!profile || loading) return <p>Loading...</p>;
+  if (!profile || loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="flex flex-col items-center">
+          <Loader className="h-10 w-10 animate-spin text-blue-500" />
+          <p className="mt-3 text-gray-500 text-lg font-medium">Loading game data...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Use a default banner image (you can update this if the profile has a banner property)
   const bannerImage = "/banner/character-banner-temp.png";
